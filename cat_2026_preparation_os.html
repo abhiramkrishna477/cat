@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CAT OS 🎯 2026 Preparation Edition</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --bg-color: #020617;
+            --panel-bg: rgba(15, 23, 42, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color); 
+            color: #cbd5e1;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(249, 115, 22, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+            -webkit-tap-highlight-color: transparent;
+        } 
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+        .no-scroll::-webkit-scrollbar { display: none; }
+        .no-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .modal-enter { animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .glass-panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-press { transition: transform 0.1s ease, filter 0.2s ease, background-color 0.2s ease; }
+        .btn-press:active { transform: scale(0.96); filter: brightness(0.9); }
+
+        .progress-bar-fill { transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .tab-active { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); box-shadow: inset 0 0 15px rgba(59,130,246,0.1); }
+        .tab-inactive { background: rgba(0, 0, 0, 0.2); color: #64748b; border-color: transparent; }
+    </style>
+</head>
+<body class="h-[100dvh] w-full flex items-center justify-center p-0 md:p-4 lg:p-6 overflow-hidden relative">
+
+    <div id="toast-container" class="fixed top-6 left-1/2 -translate-x-1/2 z-[999] flex flex-col gap-2 pointer-events-none w-full max-w-[400px] items-center px-4"></div>
+
+    <div class="w-full h-full max-w-[1500px] md:h-full md:rounded-[2rem] bg-slate-950/80 backdrop-blur-3xl border-0 md:border border-white/10 shadow-2xl relative overflow-hidden flex flex-col md:flex-row ring-1 ring-white/5">
+        
+        <div id="loading-screen" class="absolute inset-0 bg-[var(--bg-color)]/95 backdrop-blur-xl z-[100] flex flex-col items-center justify-center p-4 transition-opacity duration-500">
+            <div class="flex flex-col items-center gap-6 text-center">
+                <div class="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+                <h2 class="text-3xl font-black text-white flex items-center gap-3 tracking-tight">
+                    <i class="ph-fill ph-target text-orange-500"></i> CAT OS 2026
+                </h2>
+                <p class="text-slate-400 font-medium">Loading preparation state...</p>
+            </div>
+        </div>
+
+        <!-- LEFT SIDEBAR: Dashboard, Global Stats, Next Action -->
+        <aside class="w-full md:w-[380px] lg:w-[420px] flex-shrink-0 flex flex-col border-b md:border-b-0 md:border-r border-white/10 bg-slate-900/40 relative z-10 h-[50vh] md:h-full max-h-full">
+            
+            <header class="p-6 pb-4 flex justify-between items-start shrink-0 border-b border-white/5 bg-gradient-to-b from-blue-900/20 to-transparent">
+                <div>
+                    <h1 class="text-2xl font-black text-white flex items-center gap-2 tracking-tight mb-1">
+                        <i class="ph-fill ph-target text-orange-500"></i> CAT 2026
+                    </h1>
+                    <span id="sync-status-text" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest pl-1">Day 0 Mode</span>
+                </div>
+                <button onclick="window.forceSync()" class="text-slate-400 hover:text-blue-400 transition-colors btn-press bg-white/5 p-2 rounded-xl" title="Force Sync">
+                    <i class="ph-bold ph-arrows-clockwise text-lg" id="sync-icon"></i>
+                </button>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-5 lg:p-6 flex flex-col gap-6 no-scroll">
+                
+                <!-- Countdown & Top Metrics -->
+                <div class="bg-gradient-to-br from-blue-900/30 to-slate-900/60 p-5 rounded-3xl border border-blue-500/20 shadow-lg relative overflow-hidden shrink-0">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10"></div>
+                    
+                    <div class="flex justify-between items-start mb-4 border-b border-white/10 pb-4">
+                        <div>
+                            <h2 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1" id="phase-badge">Phase 1 • Foundation</h2>
+                            <div class="flex items-baseline gap-1.5">
+                                <span id="countdown-days" class="text-4xl font-black text-white tracking-tighter">60</span>
+                                <span class="text-xs font-bold text-slate-400">DAYS LEFT</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <h2 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Overall Acc.</h2>
+                            <span id="global-acc" class="text-2xl font-black text-slate-400">--</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="bg-black/30 p-2.5 rounded-xl border border-white/5 text-center">
+                            <span class="block text-[9px] font-bold text-slate-500 uppercase">Syllabus</span>
+                            <span id="global-syllabus" class="block text-sm font-black text-white mt-0.5">0%</span>
+                        </div>
+                        <div class="bg-black/30 p-2.5 rounded-xl border border-white/5 text-center">
+                            <span class="block text-[9px] font-bold text-slate-500 uppercase">Qs Solved</span>
+                            <span id="global-qs" class="block text-sm font-black text-white mt-0.5">0</span>
+                        </div>
+                        <div class="bg-black/30 p-2.5 rounded-xl border border-white/5 text-center">
+                            <span class="block text-[9px] font-bold text-slate-500 uppercase">Mocks</span>
+                            <span id="global-mocks" class="block text-sm font-black text-white mt-0.5">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 shrink-0">
+                    <div class="flex justify-between items-end">
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="ph-fill ph-chart-polar text-orange-500"></i> Today's Output Score
+                        </h2>
+                        <span id="daily-score-text" class="text-2xl font-black text-white">0%</span>
+                    </div>
+                    <div class="w-full bg-black/40 rounded-full h-3 overflow-hidden border border-white/5">
+                        <div id="daily-score-bar" class="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-full progress-bar-fill w-0 shadow-[0_0_10px_rgba(249,115,22,0.5)]"></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 mt-1">
+                        <div class="bg-black/20 p-3 rounded-2xl border border-white/5">
+                            <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1.5"><span>Deep Work</span><span id="tgt-dw-text" class="text-purple-400">0h / 3h</span></div>
+                            <div class="w-full bg-black/60 rounded-full h-1.5"><div id="tgt-dw-bar" class="bg-purple-500 h-full rounded-full progress-bar-fill w-0"></div></div>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-2xl border border-white/5">
+                            <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1.5"><span>Quant Qs</span><span id="tgt-qa-text" class="text-blue-400">0 / 20</span></div>
+                            <div class="w-full bg-black/60 rounded-full h-1.5"><div id="tgt-qa-bar" class="bg-blue-500 h-full rounded-full progress-bar-fill w-0"></div></div>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-2xl border border-white/5">
+                            <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1.5"><span>LRDI Sets</span><span id="tgt-lrdi-text" class="text-orange-400">0 / 2</span></div>
+                            <div class="w-full bg-black/60 rounded-full h-1.5"><div id="tgt-lrdi-bar" class="bg-orange-500 h-full rounded-full progress-bar-fill w-0"></div></div>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-2xl border border-white/5">
+                            <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1.5"><span>VARC Qs</span><span id="tgt-varc-text" class="text-green-400">0 / 15</span></div>
+                            <div class="w-full bg-black/60 rounded-full h-1.5"><div id="tgt-varc-bar" class="bg-green-500 h-full rounded-full progress-bar-fill w-0"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-indigo-900/20 border border-indigo-500/20 p-4 rounded-2xl flex flex-col gap-2 shrink-0 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-500/10 blur-2xl rounded-full"></div>
+                    <h3 class="text-[10px] uppercase font-bold text-indigo-400 tracking-wider flex items-center gap-1.5"><i class="ph-fill ph-lightbulb"></i> Next Action</h3>
+                    <div id="next-action-content" class="relative z-10">
+                        <span class="block text-sm font-bold text-white mb-1">Start your first CAT study session.</span>
+                    </div>
+                </div>
+
+                <div class="bg-black/30 p-4 rounded-2xl border border-white/5 shrink-0 mt-auto">
+                    <h3 class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-3">7-Day Output Consistency</h3>
+                    <div class="flex gap-2 justify-between items-end h-[60px]" id="consistency-bars"></div>
+                    <div class="flex gap-2 justify-between mt-2 text-[9px] font-bold text-slate-500 uppercase tracking-widest" id="consistency-labels"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- RIGHT MAIN AREA: Timeline, Topics, Errors, Weekly, Time & Productivity -->
+        <main class="flex-1 flex flex-col relative z-0 h-[50vh] md:h-full max-h-full overflow-hidden p-4 sm:p-5 lg:p-6 gap-5 bg-slate-950/50">
+            
+            <section class="glass-panel p-1.5 rounded-2xl flex items-center gap-1.5 relative overflow-hidden shrink-0 shadow-lg border border-white/5">
+                <button id="strip-prev" class="p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition btn-press z-10 bg-black/20 shrink-0"><i class="ph ph-caret-left font-bold"></i></button>
+                <div class="absolute left-10 top-0 bottom-0 w-8 bg-gradient-to-r from-[var(--panel-bg)] to-transparent z-0 pointer-events-none backdrop-blur-sm"></div>
+                <div id="date-strip" class="flex-1 overflow-x-auto flex gap-2 no-scroll items-center scroll-smooth px-1 z-0 relative"></div>
+                <div class="absolute right-10 top-0 bottom-0 w-8 bg-gradient-to-l from-[var(--panel-bg)] to-transparent z-0 pointer-events-none backdrop-blur-sm"></div>
+                <button id="strip-next" class="p-2.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition btn-press z-10 bg-black/20 shrink-0"><i class="ph ph-caret-right font-bold"></i></button>
+            </section>
+
+            <section class="glass-panel rounded-3xl flex flex-col flex-1 overflow-hidden shadow-2xl border border-white/10">
+                
+                <div class="flex p-2 gap-2 border-b border-white/5 shrink-0 bg-black/20 overflow-x-auto no-scroll">
+                    <button id="tab-btn-diary" onclick="window.switchTab('diary')" class="tab-active flex-1 py-3 px-4 min-w-[130px] text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all btn-press border">
+                        <i class="ph-fill ph-clock"></i> Daily Timeline
+                    </button>
+                    <button id="tab-btn-topics" onclick="window.switchTab('topics')" class="tab-inactive flex-1 py-3 px-4 min-w-[130px] text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all btn-press border">
+                        <i class="ph-fill ph-books"></i> Subject Mastery
+                    </button>
+                    <button id="tab-btn-errors" onclick="window.switchTab('errors')" class="tab-inactive flex-1 py-3 px-4 min-w-[130px] text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all btn-press border">
+                        <i class="ph-fill ph-warning-circle"></i> Error Log
+                    </button>
+                    <button id="tab-btn-weekly" onclick="window.switchTab('weekly')" class="tab-inactive flex-1 py-3 px-4 min-w-[130px] text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all btn-press border">
+                        <i class="ph-fill ph-calendar-check"></i> Weekly Review
+                    </button>
+                    <button id="tab-btn-productivity" onclick="window.switchTab('productivity')" class="tab-inactive flex-1 py-3 px-4 min-w-[140px] text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all btn-press border">
+                        <i class="ph-fill ph-chart-pie-slice"></i> Time & Productivity
+                    </button>
+                </div>
+
+                <!-- TAB: DAILY TIMELINE (Hourly View with Tap to Log) -->
+                <div id="tab-diary" class="flex flex-col flex-1 overflow-hidden fade-in relative">
+                    <div class="p-4 px-6 border-b border-white/5 bg-slate-900/30 flex justify-between items-center shrink-0">
+                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                            <i class="ph-fill ph-clock text-amber-500 text-base"></i> Daily Timeline & Diary
+                        </h3>
+                        <span id="timeline-date-badge" class="text-xs font-bold text-white bg-white/10 px-3 py-1 rounded-xl"></span>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scroll">
+                        <!-- Daily Reflection / Notes Area -->
+                        <div class="mb-6 bg-black/30 border border-white/5 p-4 rounded-2xl flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><i class="ph-fill ph-note-pencil text-amber-400"></i> Daily Reflection & Notes</span>
+                                <button onclick="window.saveDailyNotes()" class="text-[10px] font-bold bg-amber-600 hover:bg-amber-500 text-white px-3 py-1 rounded-lg transition btn-press">Save Notes</button>
+                            </div>
+                            <textarea id="daily-notes-textarea" placeholder="What went well today, struggles, tomorrow's plan..." class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-amber-500 h-20 resize-none shadow-inner"></textarea>
+                        </div>
+
+                        <!-- Hourly Vertical Timeline -->
+                        <div id="hourly-timeline-container" class="flex flex-col relative pb-10"></div>
+                    </div>
+                </div>
+
+                <div id="tab-topics" class="hidden flex-col flex-1 overflow-hidden fade-in">
+                    <div class="p-4 sm:p-5 border-b border-white/5 bg-slate-900/50 flex gap-2 overflow-x-auto no-scroll shrink-0 items-center justify-between">
+                        <div class="flex gap-2">
+                            <button onclick="window.filterTopics('All')" class="px-4 py-2 bg-white/10 text-white rounded-lg text-xs font-bold shrink-0 btn-press topic-filter active">All (20)</button>
+                            <button onclick="window.filterTopics('QA')" class="px-4 py-2 bg-black/30 text-slate-400 rounded-lg text-xs font-bold shrink-0 btn-press hover:bg-white/5 topic-filter">Quant (10)</button>
+                            <button onclick="window.filterTopics('LRDI')" class="px-4 py-2 bg-black/30 text-slate-400 rounded-lg text-xs font-bold shrink-0 btn-press hover:bg-white/5 topic-filter">LRDI (5)</button>
+                            <button onclick="window.filterTopics('VARC')" class="px-4 py-2 bg-black/30 text-slate-400 rounded-lg text-xs font-bold shrink-0 btn-press hover:bg-white/5 topic-filter">VARC (5)</button>
+                        </div>
+                        <span class="text-xs font-medium text-slate-400 hidden md:block">* Mastery based on Practice Volume & Accuracy</span>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 sm:p-5 custom-scroll bg-black/10">
+                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-10" id="topics-list"></div>
+                    </div>
+                </div>
+
+                <div id="tab-errors" class="hidden flex-col flex-1 overflow-hidden fade-in">
+                    <div class="p-4 sm:p-5 border-b border-white/5 bg-slate-900/50 shrink-0 flex justify-between items-center">
+                        <h3 class="text-sm font-bold text-slate-300">Error Log & Mistakes</h3>
+                        <button onclick="window.openModal('error')" class="px-5 py-2.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl text-xs font-bold hover:bg-rose-500/30 transition btn-press flex items-center gap-2">
+                            <i class="ph-bold ph-plus-circle"></i> Log Mistake
+                        </button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 sm:p-5 custom-scroll">
+                        <div id="errors-list" class="flex flex-col gap-3 pb-10"></div>
+                    </div>
+                </div>
+
+                <div id="tab-weekly" class="hidden flex-col flex-1 overflow-hidden fade-in relative">
+                    <div class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scroll">
+                        <h2 class="text-xl font-black text-white mb-6">Rolling 7-Day Performance & Comparison</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-black/40 border border-white/5 p-5 rounded-3xl">
+                                <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Output Metrics</h3>
+                                <div class="space-y-4" id="weekly-output-stats"></div>
+                            </div>
+                            <div class="bg-black/40 border border-white/5 p-5 rounded-3xl">
+                                <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Time Allocation</h3>
+                                <div class="space-y-4" id="weekly-time-stats"></div>
+                            </div>
+                        </div>
+                        <div class="bg-indigo-900/10 border border-indigo-500/10 p-5 rounded-3xl">
+                            <h3 class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-4">Weekly Facts & Changes</h3>
+                            <ul id="weekly-facts-list" class="text-xs font-medium text-slate-300 space-y-2 leading-relaxed"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-productivity" class="hidden flex-col flex-1 overflow-hidden fade-in relative">
+                    <div class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scroll">
+                        <h2 class="text-xl font-black text-white mb-6">Time Allocation & Distraction Breakdown</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-black/40 border border-white/5 p-5 rounded-3xl">
+                                <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Today's Time Distribution</h3>
+                                <div class="space-y-3" id="prod-time-allocation"></div>
+                            </div>
+                            <div class="bg-black/40 border border-white/5 p-5 rounded-3xl">
+                                <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Phone & Distractions</h3>
+                                <div class="space-y-3" id="prod-phone-breakdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </main> 
+    </div>
+
+    <div id="modal-hour" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl w-full max-w-md flex flex-col modal-enter border border-white/10 shadow-2xl">
+            <div class="p-6 flex flex-col gap-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 id="hour-modal-title" class="text-lg font-bold text-amber-400 flex items-center gap-2"><i class="ph-fill ph-clock text-xl"></i> Log Hour</h2>
+                    <button onclick="window.closeModal('hour')" class="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition"><i class="ph ph-x"></i></button>
+                </div>
+                
+                <div class="flex gap-2 p-1 bg-black/40 rounded-xl">
+                    <button onclick="window.switchHourTab('cat')" id="htab-cat" class="flex-1 py-2 text-xs font-bold rounded-lg bg-blue-600 text-white transition">CAT Study</button>
+                    <button onclick="window.switchHourTab('phone')" id="htab-phone" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">Phone Use</button>
+                    <button onclick="window.switchHourTab('personal')" id="htab-personal" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">Personal</button>
+                </div>
+
+                <!-- CAT Form Inside Hour -->
+                <form id="form-hour-cat" class="flex flex-col gap-3">
+                    <div class="flex gap-3">
+                        <select id="hr-section" class="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 w-1/3" onchange="window.updateTopicDropdown('hr-topic', this.value)">
+                            <option value="QA">QA</option><option value="LRDI">LRDI</option><option value="VARC">VARC</option>
+                        </select>
+                        <select id="hr-topic" class="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 flex-1"></select>
+                    </div>
+                    
+                    <select id="hr-activity" class="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 w-full" onchange="window.toggleHourInputs()">
+                        <option value="Concept Learning">📖 Concept Learning (Videos/Theory)</option>
+                        <option value="Practice" selected>📝 Question Practice</option>
+                        <option value="Revision">🔄 Revision</option>
+                        <option value="Topic Test">⚡ Topic Test</option>
+                        <option value="Sectional Test">⏱️ Sectional Test</option>
+                        <option value="Mock Test">🎯 Full Mock Test</option>
+                        <option value="Error Review">🔍 Error Review</option>
+                    </select>
+
+                    <div id="hr-q-inputs" class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-[9px] font-bold text-slate-500 uppercase px-1">Attempted</label>
+                            <input type="number" id="hr-total" placeholder="0" class="w-full bg-black/40 border border-white/10 rounded-xl px-2 py-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center mt-1">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-emerald-400 uppercase px-1">Correct</label>
+                            <input type="number" id="hr-correct" placeholder="0" class="w-full bg-black/40 border border-white/10 rounded-xl px-2 py-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center mt-1">
+                        </div>
+                        <div>
+                            <label class="text-[9px] font-bold text-rose-400 uppercase px-1">Wrong</label>
+                            <input type="number" id="hr-wrong" placeholder="0" class="w-full bg-black/40 border border-white/10 rounded-xl px-2 py-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center mt-1">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Planned Mins</label>
+                            <input type="number" id="hr-plan" value="60" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 text-center mt-1" required>
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-[10px] font-bold text-purple-400 uppercase px-1">Actual Focus Mins</label>
+                            <input type="number" id="hr-focus" value="50" class="w-full bg-purple-900/20 border border-purple-500/30 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 text-center mt-1" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white py-3.5 rounded-xl text-sm font-bold hover:bg-blue-500 btn-press shadow-lg mt-2 transition">Save CAT Session</button>
+                </form>
+
+                <!-- Phone Form Inside Hour -->
+                <form id="form-hour-phone" class="flex flex-col gap-3 hidden">
+                    <input type="text" id="hr-ph-app" placeholder="App / Activity (e.g. Instagram)" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500" required>
+                    <div class="flex gap-3">
+                        <select id="hr-ph-type" class="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500">
+                            <option value="Distraction">🛑 Distraction</option>
+                            <option value="Personal">💬 Personal</option>
+                            <option value="Productive">✅ Productive (e.g. Study/Docs)</option>
+                        </select>
+                        <input type="number" id="hr-ph-mins" placeholder="Mins" value="20" class="w-1/3 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500 text-center" required>
+                    </div>
+                    <button type="submit" class="w-full bg-rose-600 text-white py-3.5 rounded-xl text-sm font-bold hover:bg-rose-500 btn-press shadow-lg mt-2 transition">Save Phone Activity</button>
+                </form>
+
+                <!-- Personal Form Inside Hour -->
+                <form id="form-hour-personal" class="flex flex-col gap-3 hidden">
+                    <input type="text" id="hr-pe-activity" placeholder="Activity (e.g. Gym, Family, Workout)" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500" required>
+                    <input type="number" id="hr-pe-mins" placeholder="Duration (mins)" value="60" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 text-center" required>
+                    <button type="submit" class="w-full bg-emerald-600 text-white py-3.5 rounded-xl text-sm font-bold hover:bg-emerald-500 btn-press shadow-lg mt-2 transition">Save Personal Activity</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-error" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl w-full max-w-md flex flex-col modal-enter border border-white/10 shadow-2xl">
+            <div class="p-6 flex flex-col gap-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-bold text-orange-400 flex items-center gap-2"><i class="ph-fill ph-warning-circle text-xl"></i> Log Mistake</h2>
+                    <button onclick="window.closeModal('error')" class="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition"><i class="ph ph-x"></i></button>
+                </div>
+                
+                <form id="form-error" class="flex flex-col gap-3">
+                    <div class="flex gap-3">
+                        <select id="err-section" class="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 w-1/3" onchange="window.updateTopicDropdown('err-topic', this.value)">
+                            <option value="QA">QA</option><option value="LRDI">LRDI</option><option value="VARC">VARC</option>
+                        </select>
+                        <select id="err-topic" class="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500 flex-1"></select>
+                    </div>
+                    
+                    <select id="err-type" class="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500">
+                        <option value="Concept Gap">Concept Gap</option>
+                        <option value="Calculation Error">Calculation Error</option>
+                        <option value="Misread Question">Misread Question</option>
+                        <option value="Wrong Approach">Wrong Approach</option>
+                        <option value="Time Pressure">Time Pressure</option>
+                        <option value="Silly Mistake">Silly Mistake</option>
+                    </select>
+
+                    <textarea id="err-reason" placeholder="Reason for mistake..." class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500 h-20 resize-none shadow-inner" required></textarea>
+                    <textarea id="err-concept" placeholder="Correct concept / Takeaway..." class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500 h-20 resize-none shadow-inner" required></textarea>
+                    
+                    <button type="submit" class="w-full bg-orange-600 text-white py-3.5 rounded-xl text-sm font-bold hover:bg-orange-500 btn-press shadow-lg mt-2 transition">Save Mistake</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        const SUPABASE_URL = 'https://weiqjcmkkeuqxodkoqpd.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlaXFqY21ra2V1cXhvZGtvcXBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTMxMzgsImV4cCI6MjA3NzMyOTEzOH0.9hvIDbStGyFStnG0FJl_9w0LSbzcru9tf6drJ_uAKts';
+        let supabaseClient;
+        try { supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } 
+        catch (e) { console.error("Failed to init supabase", e); }
+        const currentUser = { id: 'cat-student-2026-desktop' }; 
+
+        Chart.defaults.color = '#64748b'; Chart.defaults.font.family = "'Inter', sans-serif";
+        const generateId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9);
+        const formatYYYYMMDD = (date) => date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+        const todayStr = formatYYYYMMDD(new Date('2026-09-26T00:00:00'));
+        const TARGET_DATE = new Date('2026-11-25T00:00:00');
+
+        let state = {
+            currentDate: todayStr,
+            viewDate: todayStr,
+            topicsConfig: {
+                QA: ['Time & Work', 'Series & Progressions', 'Time, Speed & Distance', 'Quadratic Equations', 'Averages & Mixtures', 'Percentages', 'Profit & Loss', 'Simple & Compound Interest', 'Ratio & Proportion', 'Functions & Graphs'],
+                LRDI: ['Reason-Based DI', 'Data Interpretation', 'Mathematical Reasoning', 'Arrangements', 'Routes & Networks'],
+                VARC: ['Reading Comprehension', 'Para Summary', 'Para Completion', 'Odd Sentence Out', 'Paragraph Jumbles']
+            },
+            days: {} 
+        };
+
+        let selectedHour = 0;
+
+        const getDayData = (dateStr = state.currentDate) => {
+            if (!state.days[dateStr]) {
+                state.days[dateStr] = { sessions: [], phoneLogs: [], personalLogs: [], errors: [], notes: '', sleepMins: 420 };
+            }
+            return state.days[dateStr];
+        };
+
+        window.showToast = (msg, type = 'success') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const color = type === 'success' ? 'border-emerald-500/50 text-emerald-400' : 'border-rose-500/50 text-rose-400';
+            const bg = type === 'success' ? 'bg-emerald-950/95' : 'bg-rose-950/95';
+            toast.className = `px-5 py-3.5 rounded-xl text-sm font-bold border shadow-2xl backdrop-blur-xl transition-all duration-300 transform translate-y-[-20px] opacity-0 ${color} ${bg} text-center flex items-center gap-3`;
+            toast.innerHTML = `<i class="ph-bold ${type === 'success' ? 'ph-check-circle' : 'ph-warning-circle'} text-lg"></i> ${msg}`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => { toast.classList.remove('translate-y-[-20px]', 'opacity-0'); toast.classList.add('translate-y-0', 'opacity-100'); });
+            setTimeout(() => { toast.classList.remove('translate-y-0', 'opacity-100'); toast.classList.add('translate-y-[-20px]', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function saveLocalState() { try { localStorage.setItem('cat_os_2026_desktop', JSON.stringify(state)); } catch(e) {} }
+        function loadLocalState() { 
+            try { 
+                const s = localStorage.getItem('cat_os_2026_desktop'); 
+                if (s) { const parsed = JSON.parse(s); if(parsed.days) state.days = parsed.days; if(parsed.currentDate) state.currentDate = parsed.currentDate; }
+            } catch (e) {} 
+        }
+
+        window.forceSync = async (silent = false) => {
+            saveLocalState();
+            const icon = document.getElementById('sync-icon'); const txt = document.getElementById('sync-status-text');
+            if(!silent && icon) { icon.classList.add('animate-spin'); txt.textContent = 'Syncing...'; }
+            let success = false;
+            if (supabaseClient) {
+                try {
+                    const { error } = await supabaseClient.from('dailyos_timeline').upsert(
+                        { user_id: currentUser.id, timeline_date: 'CAT_STATE_2026_DESK', hour: 0, text: JSON.stringify(state) }, 
+                        { onConflict: 'user_id, timeline_date, hour' }
+                    );
+                    if (!error) success = true;
+                } catch(e) {}
+            }
+            setTimeout(() => {
+                if(!silent && icon) icon.classList.remove('animate-spin');
+                if(txt) txt.textContent = success ? 'Cloud Synced' : 'Saved Locally';
+                if(!silent && success) showToast('Data securely synced.', 'success');
+            }, 800);
+        };
+
+        async function initApp() {
+            loadLocalState();
+            
+            if (supabaseClient) {
+                try {
+                    const { data } = await supabaseClient.from('dailyos_timeline').select('text').match({ user_id: currentUser.id, timeline_date: 'CAT_STATE_2026_DESK', hour: 0 }).single();
+                    if (data && data.text) {
+                        const cloudState = JSON.parse(data.text);
+                        if(Object.keys(cloudState.days).length > Object.keys(state.days).length) { state.days = cloudState.days; saveLocalState(); }
+                    }
+                } catch(e) {}
+            }
+            
+            document.getElementById('loading-screen').classList.add('opacity-0');
+            setTimeout(() => {
+                document.getElementById('loading-screen').classList.add('hidden');
+                window.updateTopicDropdown('hr-topic', 'QA');
+                window.updateTopicDropdown('err-topic', 'QA');
+                renderAll();
+                window.forceSync(true);
+            }, 500);
+        }
+
+        function getTopicStats() {
+            const stats = {};
+            Object.keys(state.topicsConfig).forEach(sec => {
+                state.topicsConfig[sec].forEach(top => {
+                    stats[top] = { sec, qTotal: 0, qCorrect: 0, qWrong: 0, conceptTime: 0, practiceTime: 0, totalTime: 0, status: 'NOT STARTED' };
+                });
+            });
+
+            Object.values(state.days).forEach(day => {
+                day.sessions.forEach(s => {
+                    if(!stats[s.topic]) stats[s.topic] = { sec: s.section, qTotal: 0, qCorrect: 0, qWrong: 0, conceptTime: 0, practiceTime: 0, totalTime: 0, status: 'NOT STARTED' };
+                    const mins = Number(s.focusedMins) || 0;
+                    stats[s.topic].totalTime += mins;
+                    if(s.activityType === 'Concept Learning') {
+                        stats[s.topic].conceptTime += mins;
+                    } else {
+                        stats[s.topic].practiceTime += mins;
+                        stats[s.topic].qTotal += Number(s.qTotal) || 0;
+                        stats[s.topic].qCorrect += Number(s.qCorrect) || 0;
+                        stats[s.topic].qWrong += Number(s.qWrong) || 0;
+                    }
+                });
+            });
+
+            Object.values(stats).forEach(t => {
+                if(t.qTotal === 0 && t.conceptTime === 0) {
+                    t.status = 'NOT STARTED';
+                    t.acc = '--';
+                } else if(t.qTotal === 0 && t.conceptTime > 0) {
+                    t.status = 'LEARNING';
+                    t.acc = '--';
+                } else {
+                    t.acc = Math.round((t.qCorrect / t.qTotal) * 100);
+                    if(t.acc < 60 || t.qTotal < 15) t.status = 'WEAK';
+                    else if(t.qTotal >= 50 && t.acc >= 80) t.status = 'MASTERED';
+                    else if(t.qTotal >= 30 && t.acc >= 75) t.status = 'STRONG';
+                    else t.status = 'PRACTICING';
+                }
+            });
+            return stats;
+        }
+
+        function getGlobalStats() {
+            const ts = getTopicStats();
+            let totalTopics = 0, coveredTopics = 0, qTot = 0, qCor = 0, mocks = 0;
+            
+            Object.values(ts).forEach(t => {
+                totalTopics++;
+                if(t.status !== 'NOT STARTED') coveredTopics++;
+                qTot += t.qTotal; qCor += t.qCorrect;
+            });
+            
+            Object.values(state.days).forEach(day => {
+                day.sessions.forEach(s => { if(s.activityType === 'Mock Test' || s.activityType === 'Sectional Test') mocks++; });
+            });
+
+            return {
+                acc: qTot > 0 ? Math.round((qCor/qTot)*100) : '--',
+                coverage: Math.round((coveredTopics/totalTopics)*100),
+                qSolved: qTot,
+                mocks: mocks,
+                topicData: ts
+            };
+        }
+
+        function getNextAction(ts) {
+            let learningNoPractice = null; let weakest = null; let notStarted = null;
+            
+            Object.entries(ts).forEach(([name, data]) => {
+                if(data.conceptTime > 60 && data.qTotal === 0) { if(!learningNoPractice) learningNoPractice = {name, ...data}; }
+                if(data.status === 'WEAK') { if(!weakest || data.acc < weakest.acc) weakest = {name, ...data}; }
+                if(data.status === 'NOT STARTED' && !notStarted) notStarted = {name, ...data};
+            });
+            
+            if(learningNoPractice) return { action: `Concept learned, but 0 practice recorded. Solve 15-20 questions.`, subj: learningNoPractice.sec, top: learningNoPractice.name, tgt: `Target ≥75% Accuracy` };
+            if(weakest) return { action: `Review error log & practice mixed questions`, subj: weakest.sec, top: weakest.name, tgt: `Target ≥70% Accuracy` };
+            if(notStarted) return { action: `Start concept learning or practice`, subj: notStarted.sec, top: notStarted.name, tgt: `Complete initial session` };
+            return { action: `Attempt a Full Mock Test or Sectional`, subj: `Mixed`, top: `Full Syllabus`, tgt: `Evaluate speed & accuracy` };
+        }
+
+        function renderSidebar() {
+            const curr = new Date(state.currentDate);
+            const diffDays = Math.max(0, Math.ceil((TARGET_DATE - curr) / (1000 * 60 * 60 * 24)));
+            document.getElementById('countdown-days').textContent = diffDays;
+            
+            const dayNum = Math.ceil((curr - new Date('2026-09-26T00:00:00')) / (1000 * 60 * 60 * 24)) + 1;
+            let phaseTitle = "Phase 1 • Foundation";
+            if(dayNum > 7 && dayNum <= 30) phaseTitle = "Phase 2 • Build";
+            else if(dayNum > 30 && dayNum <= 45) phaseTitle = "Phase 3 • Testing";
+            else if(dayNum > 45) phaseTitle = "Phase 4 • Mocks & Revision";
+            document.getElementById('phase-badge').textContent = phaseTitle;
+
+            const glob = getGlobalStats();
+            document.getElementById('global-acc').textContent = glob.acc === '--' ? '--' : `${glob.acc}%`;
+            document.getElementById('global-acc').className = `text-2xl font-black ${glob.acc>=75?'text-emerald-400':glob.acc>=60?'text-orange-400':'text-slate-400'}`;
+            document.getElementById('global-syllabus').textContent = `${glob.coverage}%`;
+            document.getElementById('global-qs').textContent = glob.qSolved;
+            document.getElementById('global-mocks').textContent = glob.mocks;
+
+            const day = getDayData();
+            let qa = 0, varc = 0, lrdi = 0, dw = 0;
+            day.sessions.forEach(s => {
+                dw += Number(s.focusedMins) || 0;
+                if(s.activityType !== 'Concept Learning') {
+                    if(s.section === 'QA') qa += Number(s.qTotal) || 0;
+                    if(s.section === 'VARC') varc += Number(s.qTotal) || 0;
+                    if(s.section === 'LRDI') lrdi += Math.ceil((Number(s.qTotal) || 0)/4);
+                }
+            });
+            
+            // Phase-based targets
+            let tDW = 180, tQA = 20, tLR = 2, tVA = 15;
+            if(dayNum > 7 && dayNum <= 30) { tDW = 300; tQA = 30; tLR = 3; tVA = 25; }
+            else if(dayNum > 30) { tDW = 360; tQA = 35; tLR = 3; tVA = 30; }
+
+            const pDW = Math.min(100, (dw/tDW)*100);
+            const pQA = Math.min(100, (qa/tQA)*100);
+            const pLRDI = Math.min(100, (lrdi/tLR)*100);
+            const pVARC = Math.min(100, (varc/tVA)*100);
+            
+            const score = Math.round((pDW + pQA + pLRDI + pVARC) / 4);
+            document.getElementById('daily-score-text').textContent = `${score}%`;
+            document.getElementById('daily-score-bar').style.width = `${score}%`;
+            document.getElementById('daily-score-bar').className = `h-full rounded-full progress-bar-fill shadow-[0_0_10px_rgba(249,115,22,0.5)] ${score>=80?'bg-emerald-500':score>=50?'bg-orange-500':'bg-rose-500'}`;
+
+            document.getElementById('tgt-dw-text').textContent = `${(dw/60).toFixed(1)}h / ${(tDW/60).toFixed(1)}h`;
+            document.getElementById('tgt-dw-bar').style.width = `${pDW}%`;
+            document.getElementById('tgt-qa-text').textContent = `${qa} / ${tQA}`;
+            document.getElementById('tgt-qa-bar').style.width = `${pQA}%`;
+            document.getElementById('tgt-lrdi-text').textContent = `${lrdi} / ${tLR}`;
+            document.getElementById('tgt-lrdi-bar').style.width = `${pLRDI}%`;
+            document.getElementById('tgt-varc-text').textContent = `${varc} / ${tVA}`;
+            document.getElementById('tgt-varc-bar').style.width = `${pVARC}%`;
+
+            const nx = getNextAction(glob.topicData);
+            document.getElementById('next-action-content').innerHTML = `
+                <span class="block text-[10px] font-bold text-slate-400 bg-black/40 px-2 py-0.5 rounded w-fit mb-1">${nx.subj} • ${nx.top}</span>
+                <span class="block text-xs font-bold text-indigo-300 mb-2">${nx.action}</span>
+                <div class="flex items-center gap-1 text-[9px] font-bold text-slate-300 uppercase tracking-widest bg-indigo-500/20 px-2 py-1 rounded w-fit border border-indigo-500/30">
+                    <i class="ph-bold ph-crosshair"></i> ${nx.tgt}
+                </div>
+            `;
+
+            const cbars = document.getElementById('consistency-bars'); const clabs = document.getElementById('consistency-labels');
+            cbars.innerHTML=''; clabs.innerHTML='';
+            for(let i=6; i>=0; i--){ 
+                const d = new Date(state.currentDate); d.setDate(d.getDate()-i); 
+                const sDate = formatYYYYMMDD(d); 
+                clabs.innerHTML += `<span>${d.toLocaleDateString('en-US',{weekday:'narrow'})}</span>`;
+                
+                const dData = state.days[sDate] || { sessions:[] };
+                let ddw=0, dqa=0, dlr=0, dva=0;
+                dData.sessions.forEach(ss=>{ ddw+=Number(ss.focusedMins)||0; if(ss.activityType!=='Concept Learning'){ if(ss.section==='QA')dqa+=Number(ss.qTotal)||0; if(ss.section==='LRDI')dlr+=Math.ceil((Number(ss.qTotal)||0)/4); if(ss.section==='VARC')dva+=Number(ss.qTotal)||0; } });
+                let sc = Math.round(((Math.min(100,(ddw/tDW)*100)+Math.min(100,(dqa/tQA)*100)+Math.min(100,(dlr/tLR)*100)+Math.min(100,(dva/tVA)*100))/4));
+                const col = sc>=80?'bg-emerald-500':sc>=50?'bg-orange-500':sc>0?'bg-rose-500':'bg-slate-700';
+                cbars.innerHTML += `<div class="w-full ${col} rounded-t-sm transition-all hover:brightness-125" style="height: ${sc||2}%" title="${sc}%"></div>`;
+            }
+        }
+
+        function renderDateStrip() {
+            const strip = document.getElementById('date-strip');
+            strip.innerHTML = '';
+            const viewObj = new Date(state.viewDate);
+            const year = viewObj.getFullYear(), month = viewObj.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+            let activeEl = null;
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateObj = new Date(year, month, i);
+                const dateStr = formatYYYYMMDD(dateObj);
+                const isSelected = dateStr === state.currentDate;
+                const dD = state.days[dateStr];
+                const hasData = dD && (dD.sessions.length > 0 || dD.phoneLogs.length > 0 || dD.personalLogs.length > 0);
+                
+                const btn = document.createElement('button');
+                btn.className = `flex flex-col items-center justify-center min-w-[3.5rem] h-[4rem] rounded-2xl transition-all shrink-0 border ${
+                    isSelected ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.5)] scale-105 z-10' : 
+                    'bg-black/30 border-transparent text-slate-400 hover:bg-white/10 hover:text-slate-200 shadow-inner'
+                }`;
+                btn.innerHTML = `
+                    <span class="text-[9px] uppercase font-bold tracking-wider mb-0.5">${dayNames[dateObj.getDay()]}</span>
+                    <span class="text-base font-black leading-none">${i}</span>
+                    <div class="w-1.5 h-1.5 rounded-full mt-1.5 shadow-sm" style="background: ${hasData && !isSelected ? '#3b82f6' : (isSelected && hasData ? '#fff' : 'transparent')}"></div>
+                `;
+                btn.onclick = () => { state.currentDate = dateStr; renderAll(); };
+                strip.appendChild(btn);
+                if (isSelected) activeEl = btn;
+            }
+            if (activeEl) setTimeout(() => activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }), 100);
+        }
+
+        function renderHourlyTimeline() {
+            const container = document.getElementById('hourly-timeline-container');
+            container.innerHTML = '';
+            
+            const currDateObj = new Date(state.currentDate);
+            document.getElementById('timeline-date-badge').textContent = currDateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            
+            const dayData = getDayData();
+            document.getElementById('daily-notes-textarea').value = dayData.notes || '';
+
+            for (let hour = 0; hour < 24; hour++) {
+                const hourLabel = hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`;
+                
+                const hourSessions = dayData.sessions.filter(s => parseInt(s.time.split(':')[0]) === hour);
+                const hourPhones = dayData.phoneLogs.filter(p => parseInt(p.time.split(':')[0]) === hour);
+                const hourPersonal = dayData.personalLogs.filter(pe => parseInt(pe.time.split(':')[0]) === hour);
+
+                const hasContent = hourSessions.length > 0 || hourPhones.length > 0 || hourPersonal.length > 0;
+
+                const row = document.createElement('div');
+                row.className = "flex min-h-[75px] group relative border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer";
+                row.onclick = () => window.openHourModal(hour, hourLabel);
+
+                let contentHtml = '';
+                if(!hasContent) {
+                    contentHtml = `<div class="text-xs text-slate-600 italic py-4 opacity-0 group-hover:opacity-100 transition">Tap to log CAT session, phone use, or personal work for ${hourLabel}...</div>`;
+                } else {
+                    contentHtml = `<div class="flex flex-col gap-2 py-3 w-full pr-4">`;
+                    hourSessions.forEach(s => {
+                        const col = s.section === 'QA' ? 'blue' : s.section === 'LRDI' ? 'orange' : 'green';
+                        const acc = s.qTotal > 0 ? Math.round((s.qCorrect / s.qTotal) * 100) : '--';
+                        contentHtml += `
+                            <div class="bg-${col}-950/30 border border-${col}-500/30 rounded-xl p-2.5 flex items-center justify-between shadow-sm">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 bg-${col}-500/20 text-${col}-400 rounded text-[9px] font-bold">${s.section}</span>
+                                    <span class="text-xs font-bold text-white">${s.topic} (${s.activityType})</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-[10px] font-semibold text-slate-300">
+                                    <span><i class="ph-fill ph-clock text-purple-400"></i> ${s.focusedMins}m focus</span>
+                                    ${s.activityType !== 'Concept Learning' ? `<span><i class="ph-fill ph-check-circle text-emerald-400"></i> ${s.qCorrect}/${s.qTotal} Qs (${acc}%)</span>` : ''}
+                                    <button onclick="event.stopPropagation(); window.deleteEntry('cat', '${s.id}')" class="text-slate-500 hover:text-rose-400"><i class="ph-bold ph-trash"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    hourPhones.forEach(p => {
+                        const typeCol = p.typeCategory === 'Distraction' ? 'rose' : p.typeCategory === 'Personal' ? 'amber' : 'blue';
+                        contentHtml += `
+                            <div class="bg-${typeCol}-950/30 border border-${typeCol}-500/30 rounded-xl p-2.5 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 bg-${typeCol}-500/20 text-${typeCol}-400 rounded text-[9px] font-bold">Phone: ${p.typeCategory}</span>
+                                    <span class="text-xs font-bold text-white">${p.app}</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-[10px] font-semibold text-slate-300">
+                                    <span>${p.duration} mins</span>
+                                    <button onclick="event.stopPropagation(); window.deleteEntry('phone', '${p.id}')" class="text-slate-500 hover:text-rose-400"><i class="ph-bold ph-trash"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    hourPersonal.forEach(pe => {
+                        contentHtml += `
+                            <div class="bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-2.5 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded text-[9px] font-bold">Personal</span>
+                                    <span class="text-xs font-bold text-white">${pe.activity}</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-[10px] font-semibold text-slate-300">
+                                    <span>${pe.duration} mins</span>
+                                    <button onclick="event.stopPropagation(); window.deleteEntry('personal', '${pe.id}')" class="text-slate-500 hover:text-rose-400"><i class="ph-bold ph-trash"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    contentHtml += `</div>`;
+                }
+
+                row.innerHTML = `
+                    <div class="w-20 shrink-0 border-r border-white/10 flex flex-col items-center pt-4 relative">
+                        <span class="text-xs font-bold text-slate-400">${hourLabel}</span>
+                        <div class="absolute right-[-4px] top-5 w-2 h-2 rounded-full ${hasContent ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-slate-700'}"></div>
+                    </div>
+                    <div class="flex-1 px-4 flex items-center">
+                        ${contentHtml}
+                    </div>
+                `;
+                container.appendChild(row);
+            }
+        }
+
+        window.saveDailyNotes = () => {
+            const val = document.getElementById('daily-notes-textarea').value;
+            getDayData().notes = val;
+            saveLocalState();
+            forceSync(true);
+            showToast("Daily notes saved successfully", "success");
+        };
+
+        let currentTopicFilter = 'All';
+        window.filterTopics = (sec) => {
+            currentTopicFilter = sec;
+            document.querySelectorAll('.topic-filter').forEach(btn => {
+                if(btn.textContent.includes(sec === 'All' ? 'All' : sec === 'QA' ? 'Quant' : sec)) { btn.classList.replace('bg-black/30', 'bg-white/10'); btn.classList.replace('text-slate-400', 'text-white'); }
+                else { btn.classList.replace('bg-white/10', 'bg-black/30'); btn.classList.replace('text-white', 'text-slate-400'); }
+            });
+            renderTopics();
+        };
+
+        function renderTopics() {
+            const list = document.getElementById('topics-list');
+            list.innerHTML = '';
+            const stats = getTopicStats();
+            
+            Object.keys(state.topicsConfig).forEach(sec => {
+                if(currentTopicFilter !== 'All' && currentTopicFilter !== sec) return;
+                
+                state.topicsConfig[sec].forEach(topic => {
+                    const tData = stats[topic];
+                    const col = sec === 'QA' ? 'blue' : sec === 'LRDI' ? 'orange' : 'green';
+                    
+                    let statCol = 'slate';
+                    if(tData.status==='MASTERED') statCol='emerald'; else if(tData.status==='STRONG') statCol='blue'; else if(tData.status==='WEAK') statCol='rose'; else if(tData.status==='LEARNING' || tData.status==='PRACTICING') statCol='orange';
+
+                    const div = document.createElement('div');
+                    div.className = `p-4 rounded-2xl border border-white/5 bg-black/30 flex flex-col gap-3 relative overflow-hidden group hover:bg-black/40 transition`;
+                    div.innerHTML = `
+                        <div class="absolute top-0 left-0 w-1 h-full bg-${col}-500/50"></div>
+                        <div class="flex justify-between items-start pl-2">
+                            <div>
+                                <span class="text-[9px] font-bold text-${col}-400 uppercase tracking-widest">${sec}</span>
+                                <h4 class="text-sm font-bold text-white leading-tight">${topic}</h4>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-[9px] uppercase font-bold text-${statCol}-400 bg-${statCol}-500/10 px-2 py-0.5 rounded border border-${statCol}-500/20">${tData.status}</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-end pl-2 mt-2">
+                            <div>
+                                <span class="block text-[10px] font-medium text-slate-400 mb-0.5">Accuracy</span>
+                                <span class="block text-lg font-black ${tData.acc!=='--' ? (tData.acc>=75?'text-emerald-400':tData.acc>=60?'text-orange-400':'text-rose-400') : 'text-slate-600'}">${tData.acc!=='--' ? tData.acc+'%' : '--'}</span>
+                            </div>
+                            <div class="text-right text-[10px] font-medium text-slate-400">
+                                <span class="block">${tData.qTotal} Qs</span>
+                                <span class="block">Concept: ${Math.round(tData.conceptTime/60)}h ${tData.conceptTime%60}m</span>
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            });
+        }
+
+        function renderErrors() {
+            const list = document.getElementById('errors-list');
+            const errors = getDayData().errors;
+            list.innerHTML = errors.length === 0 ? `<div class="text-center py-10 opacity-50"><i class="ph-fill ph-check-circle text-4xl mb-2 text-emerald-500"></i><p class="text-sm font-medium">No errors logged for this date.</p></div>` : '';
+            
+            [...errors].reverse().forEach(e => {
+                const div = document.createElement('div');
+                div.className = `p-4 rounded-2xl border border-rose-500/20 bg-rose-950/10 flex flex-col gap-2 group relative`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[9px] font-bold uppercase tracking-wider">${e.type}</span>
+                            <span class="text-xs font-bold text-white">${e.section} • ${e.topic}</span>
+                        </div>
+                        <button onclick="window.deleteEntry('error', '${e.id}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 rounded-lg transition-all absolute top-2 right-2"><i class="ph-bold ph-trash"></i></button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
+                        <div class="bg-black/30 p-3 rounded-xl border border-white/5">
+                            <span class="text-[9px] font-bold text-rose-400 uppercase tracking-widest block mb-1">Mistake / Gap</span>
+                            <p class="text-xs text-slate-300 leading-relaxed">${e.reason}</p>
+                        </div>
+                        <div class="bg-emerald-950/20 p-3 rounded-xl border border-emerald-500/10">
+                            <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block mb-1">Correct Concept</span>
+                            <p class="text-xs text-slate-300 leading-relaxed">${e.concept}</p>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function getPeriodStats(endDateStr, days) {
+            let sDate = new Date(endDateStr);
+            let pDW=0, pQA=0, pLR=0, pVA=0, pQCor=0, pMocks=0, pPhTot=0, pDist=0;
+            
+            for(let i=0; i<days; i++) {
+                const d = new Date(sDate); d.setDate(d.getDate()-i);
+                const dt = formatYYYYMMDD(d);
+                const data = state.days[dt];
+                if(data) {
+                    data.sessions.forEach(s => {
+                        pDW += Number(s.focusedMins) || 0;
+                        if(s.activityType === 'Mock Test' || s.activityType === 'Sectional Test') pMocks++;
+                        if(s.activityType !== 'Concept Learning') {
+                            pQCor += Number(s.qCorrect) || 0;
+                            if(s.section==='QA') pQA += Number(s.qTotal) || 0;
+                            if(s.section==='LRDI') pLR += Number(s.qTotal) || 0;
+                            if(s.section==='VARC') pVA += Number(s.qTotal) || 0;
+                        }
+                    });
+                    data.phoneLogs.forEach(p => { 
+                        pPhTot += Number(p.duration) || 0;
+                        if(p.typeCategory === 'Distraction') pDist += Number(p.duration) || 0; 
+                    });
+                }
+            }
+            const pTot = pQA+pLR+pVA;
+            return { dw: pDW, qs: pTot, acc: pTot>0 ? Math.round((pQCor/pTot)*100) : '--', mocks: pMocks, phone: pPhTot, dist: pDist };
+        }
+
+        function renderWeeklyReview() {
+            const currentWeek = getPeriodStats(state.currentDate, 7);
+            let prevEnd = new Date(state.currentDate); prevEnd.setDate(prevEnd.getDate()-7);
+            const prevWeek = getPeriodStats(formatYYYYMMDD(prevEnd), 7);
+
+            const oList = document.getElementById('weekly-output-stats');
+            const tList = document.getElementById('weekly-time-stats');
+            
+            const renderRow = (label, curVal, prevVal, isHigherBetter = true, unit = '') => {
+                const diff = (typeof curVal === 'number' && typeof prevVal === 'number') ? curVal - prevVal : 0;
+                let diffHtml = '';
+                if(diff !== 0) {
+                    const isGood = isHigherBetter ? diff > 0 : diff < 0;
+                    const col = isGood ? 'text-emerald-400' : 'text-rose-400';
+                    const icon = diff > 0 ? 'ph-trend-up' : 'ph-trend-down';
+                    diffHtml = `<span class="text-[10px] font-bold ${col} flex items-center gap-0.5"><i class="ph-bold ${icon}"></i> ${Math.abs(diff)}${unit}</span>`;
+                } else diffHtml = `<span class="text-[10px] font-bold text-slate-500">-</span>`;
+
+                return `
+                    <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5 hover:bg-black/40 transition">
+                        <span class="text-xs font-bold text-slate-300">${label}</span>
+                        <div class="flex flex-col items-end">
+                            <span class="text-sm font-black text-white">${curVal}${unit}</span>
+                            ${diffHtml}
+                        </div>
+                    </div>`;
+            };
+
+            oList.innerHTML = 
+                renderRow('Questions Solved', currentWeek.qs, prevWeek.qs) +
+                renderRow('Overall Accuracy', currentWeek.acc, prevWeek.acc, true, currentWeek.acc !== '--' ? '%' : '') +
+                renderRow('Mocks / Sectionals', currentWeek.mocks, prevWeek.mocks);
+            
+            tList.innerHTML = `
+                <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-slate-300">Deep Work Mins</span>
+                    <div class="flex flex-col items-end">
+                        <span class="text-sm font-black text-white">${currentWeek.dw}m</span>
+                        ${currentWeek.dw - prevWeek.dw !== 0 ? `<span class="text-[10px] font-bold ${currentWeek.dw>prevWeek.dw?'text-emerald-400':'text-rose-400'}"><i class="ph-bold ${currentWeek.dw>prevWeek.dw?'ph-trend-up':'ph-trend-down'}"></i> ${Math.abs(currentWeek.dw - prevWeek.dw)}m</span>` : '-'}
+                    </div>
+                </div>
+                <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-slate-300">Phone Distractions</span>
+                    <div class="flex flex-col items-end">
+                        <span class="text-sm font-black text-white">${currentWeek.dist}m</span>
+                        ${currentWeek.dist - prevWeek.dist !== 0 ? `<span class="text-[10px] font-bold ${currentWeek.dist<prevWeek.dist?'text-emerald-400':'text-rose-400'}"><i class="ph-bold ${currentWeek.dist>prevWeek.dist?'ph-trend-up':'ph-trend-down'}"></i> ${Math.abs(currentWeek.dist - prevWeek.dist)}m</span>` : '-'}
+                    </div>
+                </div>`;
+
+            let facts = [];
+            facts.push(`• Deep Work: ${Math.floor(currentWeek.dw/60)}h ${currentWeek.dw%60}m (${currentWeek.dw >= prevWeek.dw ? '+' : ''}${currentWeek.dw - prevWeek.dw}m vs previous week)`);
+            facts.push(`• Questions Solved: ${currentWeek.qs} (${currentWeek.qs >= prevWeek.qs ? '+' : ''}${currentWeek.qs - prevWeek.qs})`);
+            facts.push(`• Overall Accuracy: ${currentWeek.acc}${currentWeek.acc!=='--'?'%':''}`);
+            facts.push(`• Distraction Time: ${currentWeek.dist}m`);
+            facts.push(`• Phone Time: ${currentWeek.phone}m`);
+            document.getElementById('weekly-facts-list').innerHTML = facts.map(f => `<li>${f}</li>`).join('');
+        }
+
+        function renderProductivityTab() {
+            const day = getDayData();
+            let catDw = 0, personalTime = 0, phoneTime = 0, distractionTime = 0;
+            
+            day.sessions.forEach(s => catDw += Number(s.focusedMins) || 0);
+            day.personalLogs.forEach(pe => personalTime += Number(pe.duration) || 0);
+            day.phoneLogs.get ? '' : day.phoneLogs.forEach(p => {
+                phoneTime += Number(p.duration) || 0;
+                if(p.typeCategory === 'Distraction') distractionTime += Number(p.duration) || 0;
+            });
+
+            const timeAlloc = document.getElementById('prod-time-allocation');
+            timeAlloc.innerHTML = `
+                <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-slate-300">CAT Deep Work</span>
+                    <span class="text-sm font-black text-blue-400">${Math.floor(catDw/60)}h ${catDw%60}m</span>
+                </div>
+                <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-slate-300">Personal Work / Gym</span>
+                    <span class="text-sm font-black text-emerald-400">${Math.floor(personalTime/60)}h ${personalTime%60}m</span>
+                </div>
+                <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-slate-300">Total Phone Time</span>
+                    <span class="text-sm font-black text-amber-400">${Math.floor(phoneTime/60)}h ${phoneTime%60}m</span>
+                </div>
+            `;
+
+            const phoneB = document.getElementById('prod-phone-breakdown');
+            let distBreakdown = {};
+            day.phoneLogs.forEach(p => {
+                if(p.typeCategory === 'Distraction') {
+                    distBreakdown[p.app] = (distBreakdown[p.app] || 0) + (Number(p.duration) || 0);
+                }
+            });
+
+            let distHtml = Object.entries(distBreakdown).map(([app, mins]) => `
+                <div class="flex justify-between items-center text-xs text-slate-300 bg-black/20 px-3 py-2 rounded-lg">
+                    <span>${app}</span>
+                    <span class="font-bold text-rose-400">${mins}m</span>
+                </div>
+            `).join('') || '<p class="text-xs text-slate-500">No distraction recorded.</p>';
+
+            phoneB.innerHTML = `
+                <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5 mb-3">
+                    <span class="text-xs font-bold text-slate-300">Total Distraction Time</span>
+                    <span class="text-sm font-black text-rose-400">${distractionTime}m</span>
+                </div>
+                <div class="space-y-2">${distHtml}</div>
+            `;
+        }
+
+        function renderAll() {
+            renderSidebar();
+            renderDateStrip();
+            renderHourlyTimeline();
+            renderTopics();
+            renderErrors();
+            renderWeeklyReview();
+            renderProductivityTab();
+        }
+
+        window.switchTab = (tabId) => {
+            ['diary', 'topics', 'errors', 'weekly', 'productivity'].forEach(id => {
+                document.getElementById(`tab-${id}`).classList.add('hidden');
+                document.getElementById(`tab-${id}`).classList.remove('flex');
+                document.getElementById(`tab-btn-${id}`).classList.replace('tab-active', 'tab-inactive');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('flex');
+            document.getElementById(`tab-btn-${tabId}`).classList.replace('tab-inactive', 'tab-active');
+            if(tabId === 'weekly') renderWeeklyReview();
+            if(tabId === 'productivity') renderProductivityTab();
+        };
+
+        window.updateTopicDropdown = (dropdownId, section) => {
+            const select = document.getElementById(dropdownId);
+            select.innerHTML = '';
+            (state.topicsConfig[section] || []).forEach(t => {
+                const opt = document.createElement('option'); opt.value = t; opt.textContent = t;
+                select.appendChild(opt);
+            });
+        };
+
+        window.toggleHourInputs = () => {
+            const act = document.getElementById('hr-activity').value;
+            const qInps = document.getElementById('hr-q-inputs');
+            if(act === 'Concept Learning' || act === 'Revision' || act === 'Error Review') {
+                qInps.style.opacity = '0.3';
+                document.getElementById('hr-total').value = 0;
+                document.getElementById('hr-correct').value = 0;
+                document.getElementById('hr-wrong').value = 0;
+                document.getElementById('hr-total').disabled = true;
+                document.getElementById('hr-correct').disabled = true;
+                document.getElementById('hr-wrong').disabled = true;
+            } else {
+                qInps.style.opacity = '1';
+                document.getElementById('hr-total').disabled = false;
+                document.getElementById('hr-correct').disabled = false;
+                document.getElementById('hr-wrong').disabled = false;
+            }
+        };
+
+        window.openModal = (type) => { document.getElementById(`modal-${type}`).classList.remove('hidden'); };
+        window.closeModal = (type) => { document.getElementById(`modal-${type}`).classList.add('hidden'); };
+
+        window.openHourModal = (hour, label) => {
+            selectedHour = hour;
+            document.getElementById('hour-modal-title').innerHTML = `<i class="ph-fill ph-clock text-xl"></i> Log for ${label}`;
+            document.getElementById('modal-hour').classList.remove('hidden');
+        };
+
+        window.switchHourTab = (tab) => {
+            ['cat', 'phone', 'personal'].forEach(t => {
+                document.getElementById(`form-hour-${t}`).classList.add('hidden');
+                document.getElementById(`htab-${t}`).className = "flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition";
+            });
+            document.getElementById(`form-hour-${tab}`).classList.remove('hidden');
+            document.getElementById(`htab-${tab}`).className = `flex-1 py-2 text-xs font-bold rounded-lg text-white transition ${tab==='cat'?'bg-blue-600':tab==='phone'?'bg-rose-600':'bg-emerald-600'}`;
+        };
+
+        // Form Submit: Hour CAT
+        document.getElementById('form-hour-cat').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const act = document.getElementById('hr-activity').value;
+            let qT = parseInt(document.getElementById('hr-total').value) || 0;
+            let qC = parseInt(document.getElementById('hr-correct').value) || 0;
+            let qW = parseInt(document.getElementById('hr-wrong').value) || 0;
+            
+            if(act !== 'Concept Learning' && act !== 'Revision' && act !== 'Error Review' && (qC + qW !== qT) && qT > 0) {
+                showToast("Correct + Wrong must equal Total Attempted", "error");
+                return;
+            }
+            
+            const timeStr = String(selectedHour).padStart(2, '0') + ':00';
+            getDayData().sessions.push({
+                id: generateId(),
+                section: document.getElementById('hr-section').value,
+                topic: document.getElementById('hr-topic').value,
+                activityType: act,
+                qTotal: qT, qCorrect: qC, qWrong: qW,
+                plannedMins: parseInt(document.getElementById('hr-plan').value),
+                focusedMins: parseInt(document.getElementById('hr-focus').value),
+                time: timeStr
+            });
+            
+            e.target.reset(); window.toggleHourInputs();
+            saveLocalState(); renderAll(); forceSync(true); window.closeModal('hour');
+            showToast("CAT Session logged successfully!", "success");
+        });
+
+        // Form Submit: Hour Phone
+        document.getElementById('form-hour-phone').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const timeStr = String(selectedHour).padStart(2, '0') + ':00';
+            getDayData().phoneLogs.push({
+                id: generateId(),
+                app: document.getElementById('hr-ph-app').value,
+                typeCategory: document.getElementById('hr-ph-type').value,
+                duration: parseInt(document.getElementById('hr-ph-mins').value),
+                time: timeStr
+            });
+            e.target.reset();
+            saveLocalState(); renderAll(); forceSync(true); window.closeModal('hour');
+            showToast("Phone activity logged!", "success");
+        });
+
+        // Form Submit: Hour Personal
+        document.getElementById('form-hour-personal').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const timeStr = String(selectedHour).padStart(2, '0') + ':00';
+            getDayData().personalLogs.push({
+                id: generateId(),
+                activity: document.getElementById('hr-pe-activity').value,
+                duration: parseInt(document.getElementById('hr-pe-mins').value),
+                time: timeStr
+            });
+            e.target.reset();
+            saveLocalState(); renderAll(); forceSync(true); window.closeModal('hour');
+            showToast("Personal activity logged!", "success");
+        });
+
+        // Form Submit: Error
+        document.getElementById('form-error').addEventListener('submit', (e) => {
+            e.preventDefault();
+            getDayData().errors.push({
+                id: generateId(),
+                section: document.getElementById('err-section').value,
+                topic: document.getElementById('err-topic').value,
+                type: document.getElementById('err-type').value,
+                reason: document.getElementById('err-reason').value,
+                concept: document.getElementById('err-concept').value,
+                time: '12:00'
+            });
+            e.target.reset(); 
+            saveLocalState(); renderAll(); forceSync(true); window.closeModal('error');
+            showToast("Mistake recorded in Error Log", "success");
+        });
+
+        window.deleteEntry = (type, id) => {
+            const d = getDayData();
+            if(type === 'cat') d.sessions = d.sessions.filter(x => x.id !== id);
+            else if(type === 'phone') d.phoneLogs = d.phoneLogs.filter(x => x.id !== id);
+            else if(type === 'personal') d.personalLogs = d.personalLogs.filter(x => x.id !== id);
+            else if(type === 'error') d.errors = d.errors.filter(x => x.id !== id);
+            saveLocalState(); renderAll(); forceSync(true);
+            showToast("Entry removed", "success");
+        };
+
+        document.getElementById('strip-prev').addEventListener('click', () => { const d = new Date(state.viewDate); d.setMonth(d.getMonth()-1); state.viewDate = formatYYYYMMDD(d); renderDateStrip(); });
+        document.getElementById('strip-next').addEventListener('click', () => { const d = new Date(state.viewDate); d.setMonth(d.getMonth()+1); state.viewDate = formatYYYYMMDD(d); renderDateStrip(); });
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
