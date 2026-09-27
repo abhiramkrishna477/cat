@@ -147,16 +147,16 @@
                             <div class="w-full bg-black/60 rounded-full h-1.5"><div id="tgt-dw-bar" class="bg-purple-500 h-full rounded-full progress-bar-fill w-0"></div></div>
                         </div>
                         <div class="bg-black/20 p-3 rounded-2xl border border-white/5">
+                            <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1.5"><span>Lectures / Learn</span><span id="tgt-learn-text" class="text-amber-400">0m / 90m</span></div>
+                            <div class="w-full bg-black/60 rounded-full h-1.5"><div id="tgt-learn-bar" class="bg-amber-500 h-full rounded-full progress-bar-fill w-0"></div></div>
+                        </div>
+                        <div class="bg-black/20 p-3 rounded-2xl border border-white/5">
                             <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1.5"><span>Quant Qs</span><span id="tgt-qa-text" class="text-blue-400">0 / 20</span></div>
                             <div class="w-full bg-black/60 rounded-full h-1.5"><div id="tgt-qa-bar" class="bg-blue-500 h-full rounded-full progress-bar-fill w-0"></div></div>
                         </div>
                         <div class="bg-black/20 p-3 rounded-2xl border border-white/5">
-                            <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1.5"><span>LRDI Sets</span><span id="tgt-lrdi-text" class="text-orange-400">0 / 2</span></div>
+                            <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1.5"><span>LRDI/VARC</span><span id="tgt-lrdi-text" class="text-orange-400">0 / 2</span></div>
                             <div class="w-full bg-black/60 rounded-full h-1.5"><div id="tgt-lrdi-bar" class="bg-orange-500 h-full rounded-full progress-bar-fill w-0"></div></div>
-                        </div>
-                        <div class="bg-black/20 p-3 rounded-2xl border border-white/5">
-                            <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1.5"><span>VARC Qs</span><span id="tgt-varc-text" class="text-green-400">0 / 15</span></div>
-                            <div class="w-full bg-black/60 rounded-full h-1.5"><div id="tgt-varc-bar" class="bg-green-500 h-full rounded-full progress-bar-fill w-0"></div></div>
                         </div>
                     </div>
                 </div>
@@ -165,7 +165,7 @@
                     <div class="absolute right-0 top-0 w-24 h-24 bg-indigo-500/10 blur-2xl rounded-full"></div>
                     <h3 class="text-[10px] uppercase font-bold text-indigo-400 tracking-wider flex items-center gap-1.5"><i class="ph-fill ph-lightbulb"></i> Next Action</h3>
                     <div id="next-action-content" class="relative z-10">
-                        <span class="block text-sm font-bold text-white mb-1">Start your first CAT study session.</span>
+                        <span class="block text-sm font-bold text-white mb-1">Start your first CAT study session or lecture.</span>
                     </div>
                 </div>
 
@@ -192,7 +192,7 @@
                 
                 <div class="flex p-2 gap-2 border-b border-white/5 shrink-0 bg-black/20 overflow-x-auto no-scroll">
                     <button id="tab-btn-diary" onclick="window.switchTab('diary')" class="tab-active flex-1 py-3 px-4 min-w-[130px] text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all btn-press border">
-                        <i class="ph-fill ph-clock"></i> Daily Timeline
+                        <i class="ph-fill ph-list-checks"></i> Activity & Progress Log
                     </button>
                     <button id="tab-btn-topics" onclick="window.switchTab('topics')" class="tab-inactive flex-1 py-3 px-4 min-w-[130px] text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all btn-press border">
                         <i class="ph-fill ph-books"></i> Subject Mastery
@@ -208,13 +208,20 @@
                     </button>
                 </div>
 
-                <!-- TAB: DAILY TIMELINE (Hourly View with Tap to Log) -->
+                <!-- TAB: ACTIVITY LOG & PROGRESS JOURNAL -->
                 <div id="tab-diary" class="flex flex-col flex-1 overflow-hidden fade-in relative">
                     <div class="p-4 px-6 border-b border-white/5 bg-slate-900/30 flex justify-between items-center shrink-0">
-                        <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
-                            <i class="ph-fill ph-clock text-amber-500 text-base"></i> Daily Timeline & Diary
-                        </h3>
-                        <span id="timeline-date-badge" class="text-xs font-bold text-white bg-white/10 px-3 py-1 rounded-xl"></span>
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                                <i class="ph-fill ph-list-checks text-amber-500 text-base"></i> Daily Activity & Progress Log
+                            </h3>
+                            <span id="timeline-date-badge" class="text-[11px] font-medium text-slate-400"></span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="window.openModal('hour')" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition btn-press flex items-center gap-2 shadow-lg shadow-amber-900/30">
+                                <i class="ph-bold ph-plus-circle text-sm"></i> Log Activity / Session
+                            </button>
+                        </div>
                     </div>
 
                     <div class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scroll">
@@ -224,14 +231,15 @@
                                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><i class="ph-fill ph-note-pencil text-amber-400"></i> Daily Reflection & Notes</span>
                                 <button onclick="window.saveDailyNotes()" class="text-[10px] font-bold bg-amber-600 hover:bg-amber-500 text-white px-3 py-1 rounded-lg transition btn-press">Save Notes</button>
                             </div>
-                            <textarea id="daily-notes-textarea" placeholder="What went well today, struggles, tomorrow's plan..." class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-amber-500 h-20 resize-none shadow-inner"></textarea>
+                            <textarea id="daily-notes-textarea" placeholder="What lectures did you watch? What concepts learned, struggles, tomorrow's plan..." class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-amber-500 h-20 resize-none shadow-inner"></textarea>
                         </div>
 
-                        <!-- Hourly Vertical Timeline -->
-                        <div id="hourly-timeline-container" class="flex flex-col relative pb-10"></div>
+                        <!-- Recorded Activities List for the Day -->
+                        <div id="activity-list-container" class="flex flex-col gap-3 pb-10"></div>
                     </div>
                 </div>
 
+                <!-- TAB: SUBJECT MASTERY -->
                 <div id="tab-topics" class="hidden flex-col flex-1 overflow-hidden fade-in">
                     <div class="p-4 sm:p-5 border-b border-white/5 bg-slate-900/50 flex gap-2 overflow-x-auto no-scroll shrink-0 items-center justify-between">
                         <div class="flex gap-2">
@@ -240,13 +248,14 @@
                             <button onclick="window.filterTopics('LRDI')" class="px-4 py-2 bg-black/30 text-slate-400 rounded-lg text-xs font-bold shrink-0 btn-press hover:bg-white/5 topic-filter">LRDI (5)</button>
                             <button onclick="window.filterTopics('VARC')" class="px-4 py-2 bg-black/30 text-slate-400 rounded-lg text-xs font-bold shrink-0 btn-press hover:bg-white/5 topic-filter">VARC (5)</button>
                         </div>
-                        <span class="text-xs font-medium text-slate-400 hidden md:block">* Mastery based on Practice Volume & Accuracy</span>
+                        <span class="text-xs font-medium text-slate-400 hidden md:block">* Mastery tracks Lectures/Concept Learning + Practice Volume</span>
                     </div>
                     <div class="flex-1 overflow-y-auto p-4 sm:p-5 custom-scroll bg-black/10">
                         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-10" id="topics-list"></div>
                     </div>
                 </div>
 
+                <!-- TAB: ERROR LOG -->
                 <div id="tab-errors" class="hidden flex-col flex-1 overflow-hidden fade-in">
                     <div class="p-4 sm:p-5 border-b border-white/5 bg-slate-900/50 shrink-0 flex justify-between items-center">
                         <h3 class="text-sm font-bold text-slate-300">Error Log & Mistakes</h3>
@@ -259,6 +268,7 @@
                     </div>
                 </div>
 
+                <!-- TAB: WEEKLY REVIEW -->
                 <div id="tab-weekly" class="hidden flex-col flex-1 overflow-hidden fade-in relative">
                     <div class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scroll">
                         <h2 class="text-xl font-black text-white mb-6">Rolling 7-Day Performance & Comparison</h2>
@@ -279,6 +289,7 @@
                     </div>
                 </div>
 
+                <!-- TAB: TIME & PRODUCTIVITY -->
                 <div id="tab-productivity" class="hidden flex-col flex-1 overflow-hidden fade-in relative">
                     <div class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scroll">
                         <h2 class="text-xl font-black text-white mb-6">Time Allocation & Distraction Breakdown</h2>
@@ -299,11 +310,12 @@
         </main> 
     </div>
 
+    <!-- MODAL: LOG ACTIVITY / SESSION -->
     <div id="modal-hour" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4">
         <div class="glass-panel rounded-3xl w-full max-w-md flex flex-col modal-enter border border-white/10 shadow-2xl">
             <div class="p-6 flex flex-col gap-4">
                 <div class="flex justify-between items-center mb-2">
-                    <h2 id="hour-modal-title" class="text-lg font-bold text-amber-400 flex items-center gap-2"><i class="ph-fill ph-clock text-xl"></i> Log Hour</h2>
+                    <h2 id="hour-modal-title" class="text-lg font-bold text-amber-400 flex items-center gap-2"><i class="ph-fill ph-plus-circle text-xl"></i> Log CAT Session & Lectures</h2>
                     <button onclick="window.closeModal('hour')" class="text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition"><i class="ph ph-x"></i></button>
                 </div>
                 
@@ -313,7 +325,7 @@
                     <button onclick="window.switchHourTab('personal')" id="htab-personal" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 transition">Personal</button>
                 </div>
 
-                <!-- CAT Form Inside Hour -->
+                <!-- CAT Form Inside Modal -->
                 <form id="form-hour-cat" class="flex flex-col gap-3">
                     <div class="flex gap-3">
                         <select id="hr-section" class="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 w-1/3" onchange="window.updateTopicDropdown('hr-topic', this.value)">
@@ -323,7 +335,7 @@
                     </div>
                     
                     <select id="hr-activity" class="bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 w-full" onchange="window.toggleHourInputs()">
-                        <option value="Concept Learning">📖 Concept Learning (Videos/Theory)</option>
+                        <option value="Concept Learning">📖 Concept Learning / Lectures (Video/Theory)</option>
                         <option value="Practice" selected>📝 Question Practice</option>
                         <option value="Revision">🔄 Revision</option>
                         <option value="Topic Test">⚡ Topic Test</option>
@@ -331,6 +343,11 @@
                         <option value="Mock Test">🎯 Full Mock Test</option>
                         <option value="Error Review">🔍 Error Review</option>
                     </select>
+
+                    <div id="hr-lecture-input" class="hidden flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-amber-400 uppercase px-1">Lecture / Video Name (Optional)</label>
+                        <input type="text" id="hr-lecture-name" placeholder="e.g. MBA Pathshala Percentages Part 1" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+                    </div>
 
                     <div id="hr-q-inputs" class="grid grid-cols-3 gap-2">
                         <div>
@@ -361,7 +378,7 @@
                     <button type="submit" class="w-full bg-blue-600 text-white py-3.5 rounded-xl text-sm font-bold hover:bg-blue-500 btn-press shadow-lg mt-2 transition">Save CAT Session</button>
                 </form>
 
-                <!-- Phone Form Inside Hour -->
+                <!-- Phone Form Inside Modal -->
                 <form id="form-hour-phone" class="flex flex-col gap-3 hidden">
                     <input type="text" id="hr-ph-app" placeholder="App / Activity (e.g. Instagram)" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500" required>
                     <div class="flex gap-3">
@@ -375,7 +392,7 @@
                     <button type="submit" class="w-full bg-rose-600 text-white py-3.5 rounded-xl text-sm font-bold hover:bg-rose-500 btn-press shadow-lg mt-2 transition">Save Phone Activity</button>
                 </form>
 
-                <!-- Personal Form Inside Hour -->
+                <!-- Personal Form Inside Modal -->
                 <form id="form-hour-personal" class="flex flex-col gap-3 hidden">
                     <input type="text" id="hr-pe-activity" placeholder="Activity (e.g. Gym, Family, Workout)" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500" required>
                     <input type="number" id="hr-pe-mins" placeholder="Duration (mins)" value="60" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 text-center" required>
@@ -385,6 +402,7 @@
         </div>
     </div>
 
+    <!-- MODAL: ERROR LOG -->
     <div id="modal-error" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md z-[200] flex items-center justify-center p-4">
         <div class="glass-panel rounded-3xl w-full max-w-md flex flex-col modal-enter border border-white/10 shadow-2xl">
             <div class="p-6 flex flex-col gap-4">
@@ -430,7 +448,7 @@
         Chart.defaults.color = '#64748b'; Chart.defaults.font.family = "'Inter', sans-serif";
         const generateId = () => crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9);
         const formatYYYYMMDD = (date) => date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
-        const todayStr = formatYYYYMMDD(new Date('2026-09-26T00:00:00'));
+        const todayStr = formatYYYYMMDD(new Date('2026-09-27T00:00:00'));
         const TARGET_DATE = new Date('2026-11-25T00:00:00');
 
         let state = {
@@ -444,11 +462,9 @@
             days: {} 
         };
 
-        let selectedHour = 0;
-
         const getDayData = (dateStr = state.currentDate) => {
             if (!state.days[dateStr]) {
-                state.days[dateStr] = { sessions: [], phoneLogs: [], personalLogs: [], errors: [], notes: '', sleepMins: 420 };
+                state.days[dateStr] = { sessions: [], phoneLogs: [], personalLogs: [], errors: [], notes: '' };
             }
             return state.days[dateStr];
         };
@@ -465,10 +481,10 @@
             setTimeout(() => { toast.classList.remove('translate-y-0', 'opacity-100'); toast.classList.add('translate-y-[-20px]', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        function saveLocalState() { try { localStorage.setItem('cat_os_2026_desktop', JSON.stringify(state)); } catch(e) {} }
+        function saveLocalState() { try { localStorage.setItem('cat_os_2026_desktop_v2', JSON.stringify(state)); } catch(e) {} }
         function loadLocalState() { 
             try { 
-                const s = localStorage.getItem('cat_os_2026_desktop'); 
+                const s = localStorage.getItem('cat_os_2026_desktop_v2'); 
                 if (s) { const parsed = JSON.parse(s); if(parsed.days) state.days = parsed.days; if(parsed.currentDate) state.currentDate = parsed.currentDate; }
             } catch (e) {} 
         }
@@ -481,7 +497,7 @@
             if (supabaseClient) {
                 try {
                     const { error } = await supabaseClient.from('dailyos_timeline').upsert(
-                        { user_id: currentUser.id, timeline_date: 'CAT_STATE_2026_DESK', hour: 0, text: JSON.stringify(state) }, 
+                        { user_id: currentUser.id, timeline_date: 'CAT_STATE_2026_DESK_V2', hour: 0, text: JSON.stringify(state) }, 
                         { onConflict: 'user_id, timeline_date, hour' }
                     );
                     if (!error) success = true;
@@ -499,7 +515,7 @@
             
             if (supabaseClient) {
                 try {
-                    const { data } = await supabaseClient.from('dailyos_timeline').select('text').match({ user_id: currentUser.id, timeline_date: 'CAT_STATE_2026_DESK', hour: 0 }).single();
+                    const { data } = await supabaseClient.from('dailyos_timeline').select('text').match({ user_id: currentUser.id, timeline_date: 'CAT_STATE_2026_DESK_V2', hour: 0 }).single();
                     if (data && data.text) {
                         const cloudState = JSON.parse(data.text);
                         if(Object.keys(cloudState.days).length > Object.keys(state.days).length) { state.days = cloudState.days; saveLocalState(); }
@@ -530,7 +546,7 @@
                     if(!stats[s.topic]) stats[s.topic] = { sec: s.section, qTotal: 0, qCorrect: 0, qWrong: 0, conceptTime: 0, practiceTime: 0, totalTime: 0, status: 'NOT STARTED' };
                     const mins = Number(s.focusedMins) || 0;
                     stats[s.topic].totalTime += mins;
-                    if(s.activityType === 'Concept Learning') {
+                    if(s.activityType === 'Concept Learning' || s.activityType === 'Revision') {
                         stats[s.topic].conceptTime += mins;
                     } else {
                         stats[s.topic].practiceTime += mins;
@@ -542,10 +558,11 @@
             });
 
             Object.values(stats).forEach(t => {
-                if(t.qTotal === 0 && t.conceptTime === 0) {
+                const totalActivityMins = t.conceptTime + t.practiceTime;
+                if(t.qTotal === 0 && totalActivityMins === 0) {
                     t.status = 'NOT STARTED';
                     t.acc = '--';
-                } else if(t.qTotal === 0 && t.conceptTime > 0) {
+                } else if(t.qTotal === 0 && totalActivityMins > 0) {
                     t.status = 'LEARNING';
                     t.acc = '--';
                 } else {
@@ -591,7 +608,7 @@
                 if(data.status === 'NOT STARTED' && !notStarted) notStarted = {name, ...data};
             });
             
-            if(learningNoPractice) return { action: `Concept learned, but 0 practice recorded. Solve 15-20 questions.`, subj: learningNoPractice.sec, top: learningNoPractice.name, tgt: `Target ≥75% Accuracy` };
+            if(learningNoPractice) return { action: `Lectures watched, practice 15-20 questions.`, subj: learningNoPractice.sec, top: learningNoPractice.name, tgt: `Target ≥75% Accuracy` };
             if(weakest) return { action: `Review error log & practice mixed questions`, subj: weakest.sec, top: weakest.name, tgt: `Target ≥70% Accuracy` };
             if(notStarted) return { action: `Start concept learning or practice`, subj: notStarted.sec, top: notStarted.name, tgt: `Complete initial session` };
             return { action: `Attempt a Full Mock Test or Sectional`, subj: `Mixed`, top: `Full Syllabus`, tgt: `Evaluate speed & accuracy` };
@@ -602,7 +619,7 @@
             const diffDays = Math.max(0, Math.ceil((TARGET_DATE - curr) / (1000 * 60 * 60 * 24)));
             document.getElementById('countdown-days').textContent = diffDays;
             
-            const dayNum = Math.ceil((curr - new Date('2026-09-26T00:00:00')) / (1000 * 60 * 60 * 24)) + 1;
+            const dayNum = Math.ceil((curr - new Date('2026-09-27T00:00:00')) / (1000 * 60 * 60 * 24)) + 1;
             let phaseTitle = "Phase 1 • Foundation";
             if(dayNum > 7 && dayNum <= 30) phaseTitle = "Phase 2 • Build";
             else if(dayNum > 30 && dayNum <= 45) phaseTitle = "Phase 3 • Testing";
@@ -617,10 +634,13 @@
             document.getElementById('global-mocks').textContent = glob.mocks;
 
             const day = getDayData();
-            let qa = 0, varc = 0, lrdi = 0, dw = 0;
+            let qa = 0, varc = 0, lrdi = 0, dw = 0, learnMins = 0;
             day.sessions.forEach(s => {
-                dw += Number(s.focusedMins) || 0;
-                if(s.activityType !== 'Concept Learning') {
+                const mins = Number(s.focusedMins) || 0;
+                dw += mins;
+                if(s.activityType === 'Concept Learning' || s.activityType === 'Revision') {
+                    learnMins += mins;
+                } else {
                     if(s.section === 'QA') qa += Number(s.qTotal) || 0;
                     if(s.section === 'VARC') varc += Number(s.qTotal) || 0;
                     if(s.section === 'LRDI') lrdi += Math.ceil((Number(s.qTotal) || 0)/4);
@@ -628,28 +648,28 @@
             });
             
             // Phase-based targets
-            let tDW = 180, tQA = 20, tLR = 2, tVA = 15;
-            if(dayNum > 7 && dayNum <= 30) { tDW = 300; tQA = 30; tLR = 3; tVA = 25; }
-            else if(dayNum > 30) { tDW = 360; tQA = 35; tLR = 3; tVA = 30; }
+            let tDW = 180, tLearn = 90, tQA = 20, tLR = 2;
+            if(dayNum > 7 && dayNum <= 30) { tDW = 300; tLearn = 120; tQA = 30; tLR = 3; }
+            else if(dayNum > 30) { tDW = 360; tLearn = 90; tQA = 35; tLR = 3; }
 
             const pDW = Math.min(100, (dw/tDW)*100);
+            const pLearn = Math.min(100, (learnMins/tLearn)*100);
             const pQA = Math.min(100, (qa/tQA)*100);
             const pLRDI = Math.min(100, (lrdi/tLR)*100);
-            const pVARC = Math.min(100, (varc/tVA)*100);
             
-            const score = Math.round((pDW + pQA + pLRDI + pVARC) / 4);
+            const score = Math.round((pDW + pLearn + pQA + pLRDI) / 4);
             document.getElementById('daily-score-text').textContent = `${score}%`;
             document.getElementById('daily-score-bar').style.width = `${score}%`;
             document.getElementById('daily-score-bar').className = `h-full rounded-full progress-bar-fill shadow-[0_0_10px_rgba(249,115,22,0.5)] ${score>=80?'bg-emerald-500':score>=50?'bg-orange-500':'bg-rose-500'}`;
 
             document.getElementById('tgt-dw-text').textContent = `${(dw/60).toFixed(1)}h / ${(tDW/60).toFixed(1)}h`;
             document.getElementById('tgt-dw-bar').style.width = `${pDW}%`;
+            document.getElementById('tgt-learn-text').textContent = `${learnMins}m / ${tLearn}m`;
+            document.getElementById('tgt-learn-bar').style.width = `${pLearn}%`;
             document.getElementById('tgt-qa-text').textContent = `${qa} / ${tQA}`;
             document.getElementById('tgt-qa-bar').style.width = `${pQA}%`;
             document.getElementById('tgt-lrdi-text').textContent = `${lrdi} / ${tLR}`;
             document.getElementById('tgt-lrdi-bar').style.width = `${pLRDI}%`;
-            document.getElementById('tgt-varc-text').textContent = `${varc} / ${tVA}`;
-            document.getElementById('tgt-varc-bar').style.width = `${pVARC}%`;
 
             const nx = getNextAction(glob.topicData);
             document.getElementById('next-action-content').innerHTML = `
@@ -668,9 +688,14 @@
                 clabs.innerHTML += `<span>${d.toLocaleDateString('en-US',{weekday:'narrow'})}</span>`;
                 
                 const dData = state.days[sDate] || { sessions:[] };
-                let ddw=0, dqa=0, dlr=0, dva=0;
-                dData.sessions.forEach(ss=>{ ddw+=Number(ss.focusedMins)||0; if(ss.activityType!=='Concept Learning'){ if(ss.section==='QA')dqa+=Number(ss.qTotal)||0; if(ss.section==='LRDI')dlr+=Math.ceil((Number(ss.qTotal)||0)/4); if(ss.section==='VARC')dva+=Number(ss.qTotal)||0; } });
-                let sc = Math.round(((Math.min(100,(ddw/tDW)*100)+Math.min(100,(dqa/tQA)*100)+Math.min(100,(dlr/tLR)*100)+Math.min(100,(dva/tVA)*100))/4));
+                let ddw=0, dqa=0, dlr=0, dlearn=0;
+                dData.sessions.forEach(ss=>{ 
+                    const m = Number(ss.focusedMins)||0;
+                    ddw += m;
+                    if(ss.activityType==='Concept Learning'||ss.activityType==='Revision') dlearn += m;
+                    else { if(ss.section==='QA')dqa+=Number(ss.qTotal)||0; if(ss.section==='LRDI')dlr+=Math.ceil((Number(ss.qTotal)||0)/4); }
+                });
+                let sc = Math.round(((Math.min(100,(ddw/tDW)*100)+Math.min(100,(dlearn/tLearn)*100)+Math.min(100,(dqa/tQA)*100)+Math.min(100,(dlr/tLR)*100))/4));
                 const col = sc>=80?'bg-emerald-500':sc>=50?'bg-orange-500':sc>0?'bg-rose-500':'bg-slate-700';
                 cbars.innerHTML += `<div class="w-full ${col} rounded-t-sm transition-all hover:brightness-125" style="height: ${sc||2}%" title="${sc}%"></div>`;
             }
@@ -709,94 +734,94 @@
             if (activeEl) setTimeout(() => activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }), 100);
         }
 
-        function renderHourlyTimeline() {
-            const container = document.getElementById('hourly-timeline-container');
+        function renderActivityLog() {
+            const container = document.getElementById('activity-list-container');
             container.innerHTML = '';
             
             const currDateObj = new Date(state.currentDate);
-            document.getElementById('timeline-date-badge').textContent = currDateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            document.getElementById('timeline-date-badge').textContent = currDateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
             
             const dayData = getDayData();
             document.getElementById('daily-notes-textarea').value = dayData.notes || '';
 
-            for (let hour = 0; hour < 24; hour++) {
-                const hourLabel = hour === 0 ? '12 AM' : hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`;
-                
-                const hourSessions = dayData.sessions.filter(s => parseInt(s.time.split(':')[0]) === hour);
-                const hourPhones = dayData.phoneLogs.filter(p => parseInt(p.time.split(':')[0]) === hour);
-                const hourPersonal = dayData.personalLogs.filter(pe => parseInt(pe.time.split(':')[0]) === hour);
+            const allActivities = [
+                ...dayData.sessions.map(s => ({ type: 'cat', data: s })),
+                ...dayData.phoneLogs.map(p => ({ type: 'phone', data: p })),
+                ...dayData.personalLogs.map(pe => ({ type: 'personal', data: pe }))
+            ];
 
-                const hasContent = hourSessions.length > 0 || hourPhones.length > 0 || hourPersonal.length > 0;
-
-                const row = document.createElement('div');
-                row.className = "flex min-h-[75px] group relative border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer";
-                row.onclick = () => window.openHourModal(hour, hourLabel);
-
-                let contentHtml = '';
-                if(!hasContent) {
-                    contentHtml = `<div class="text-xs text-slate-600 italic py-4 opacity-0 group-hover:opacity-100 transition">Tap to log CAT session, phone use, or personal work for ${hourLabel}...</div>`;
-                } else {
-                    contentHtml = `<div class="flex flex-col gap-2 py-3 w-full pr-4">`;
-                    hourSessions.forEach(s => {
-                        const col = s.section === 'QA' ? 'blue' : s.section === 'LRDI' ? 'orange' : 'green';
-                        const acc = s.qTotal > 0 ? Math.round((s.qCorrect / s.qTotal) * 100) : '--';
-                        contentHtml += `
-                            <div class="bg-${col}-950/30 border border-${col}-500/30 rounded-xl p-2.5 flex items-center justify-between shadow-sm">
-                                <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 bg-${col}-500/20 text-${col}-400 rounded text-[9px] font-bold">${s.section}</span>
-                                    <span class="text-xs font-bold text-white">${s.topic} (${s.activityType})</span>
-                                </div>
-                                <div class="flex items-center gap-3 text-[10px] font-semibold text-slate-300">
-                                    <span><i class="ph-fill ph-clock text-purple-400"></i> ${s.focusedMins}m focus</span>
-                                    ${s.activityType !== 'Concept Learning' ? `<span><i class="ph-fill ph-check-circle text-emerald-400"></i> ${s.qCorrect}/${s.qTotal} Qs (${acc}%)</span>` : ''}
-                                    <button onclick="event.stopPropagation(); window.deleteEntry('cat', '${s.id}')" class="text-slate-500 hover:text-rose-400"><i class="ph-bold ph-trash"></i></button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    hourPhones.forEach(p => {
-                        const typeCol = p.typeCategory === 'Distraction' ? 'rose' : p.typeCategory === 'Personal' ? 'amber' : 'blue';
-                        contentHtml += `
-                            <div class="bg-${typeCol}-950/30 border border-${typeCol}-500/30 rounded-xl p-2.5 flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 bg-${typeCol}-500/20 text-${typeCol}-400 rounded text-[9px] font-bold">Phone: ${p.typeCategory}</span>
-                                    <span class="text-xs font-bold text-white">${p.app}</span>
-                                </div>
-                                <div class="flex items-center gap-3 text-[10px] font-semibold text-slate-300">
-                                    <span>${p.duration} mins</span>
-                                    <button onclick="event.stopPropagation(); window.deleteEntry('phone', '${p.id}')" class="text-slate-500 hover:text-rose-400"><i class="ph-bold ph-trash"></i></button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    hourPersonal.forEach(pe => {
-                        contentHtml += `
-                            <div class="bg-emerald-950/30 border border-emerald-500/30 rounded-xl p-2.5 flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded text-[9px] font-bold">Personal</span>
-                                    <span class="text-xs font-bold text-white">${pe.activity}</span>
-                                </div>
-                                <div class="flex items-center gap-3 text-[10px] font-semibold text-slate-300">
-                                    <span>${pe.duration} mins</span>
-                                    <button onclick="event.stopPropagation(); window.deleteEntry('personal', '${pe.id}')" class="text-slate-500 hover:text-rose-400"><i class="ph-bold ph-trash"></i></button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    contentHtml += `</div>`;
-                }
-
-                row.innerHTML = `
-                    <div class="w-20 shrink-0 border-r border-white/10 flex flex-col items-center pt-4 relative">
-                        <span class="text-xs font-bold text-slate-400">${hourLabel}</span>
-                        <div class="absolute right-[-4px] top-5 w-2 h-2 rounded-full ${hasContent ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-slate-700'}"></div>
-                    </div>
-                    <div class="flex-1 px-4 flex items-center">
-                        ${contentHtml}
+            if (allActivities.length === 0) {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-16 text-center bg-black/20 border border-white/5 rounded-3xl">
+                        <div class="w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center text-xl mb-3"><i class="ph-fill ph-clipboard-text"></i></div>
+                        <h4 class="text-sm font-bold text-white mb-1">No activities logged for this date.</h4>
+                        <p class="text-xs text-slate-500 mb-4 max-w-xs">Record lectures, concept learning, question practice, or phone/personal time.</p>
+                        <button onclick="window.openModal('hour')" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold transition btn-press shadow-md">Log First Session</button>
                     </div>
                 `;
-                container.appendChild(row);
+                return;
             }
+
+            allActivities.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "glass-panel p-4 rounded-2xl flex items-center justify-between border border-white/5 shadow-md relative overflow-hidden";
+
+                if(item.type === 'cat') {
+                    const s = item.data;
+                    const col = s.section === 'QA' ? 'blue' : s.section === 'LRDI' ? 'orange' : 'green';
+                    const acc = s.qTotal > 0 ? Math.round((s.qCorrect / s.qTotal) * 100) : '--';
+                    const isLecture = s.activityType === 'Concept Learning' || s.activityType === 'Revision';
+
+                    card.innerHTML = `
+                        <div class="absolute left-0 top-0 w-1.5 h-full bg-${col}-500"></div>
+                        <div class="flex items-center gap-3 pl-2">
+                            <div class="w-10 h-10 rounded-xl bg-${col}-500/20 text-${col}-400 flex items-center justify-center shrink-0 font-bold text-xs">${s.section}</div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold text-white">${s.topic}</span>
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-${col}-500/10 text-${col}-300 border border-${col}-500/20">${s.activityType}</span>
+                                </div>
+                                ${s.lectureName ? `<p class="text-xs text-amber-300 font-medium mt-0.5 flex items-center gap-1"><i class="ph-fill ph-play-circle"></i> ${s.lectureName}</p>` : ''}
+                                <div class="flex items-center gap-3 text-[10px] font-semibold text-slate-400 mt-1">
+                                    <span><i class="ph-fill ph-clock text-purple-400"></i> ${s.focusedMins}m focus</span>
+                                    ${!isLecture ? `<span><i class="ph-fill ph-check-circle text-emerald-400"></i> ${s.qCorrect}/${s.qTotal} Qs (${acc}%)</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="window.deleteEntry('cat', '${s.id}')" class="text-slate-500 hover:text-rose-400 p-2 rounded-lg transition"><i class="ph-bold ph-trash text-base"></i></button>
+                    `;
+                } else if(item.type === 'phone') {
+                    const p = item.data;
+                    const typeCol = p.typeCategory === 'Distraction' ? 'rose' : p.typeCategory === 'Personal' ? 'amber' : 'blue';
+                    card.innerHTML = `
+                        <div class="absolute left-0 top-0 w-1.5 h-full bg-${typeCol}-500"></div>
+                        <div class="flex items-center gap-3 pl-2">
+                            <div class="w-10 h-10 rounded-xl bg-${typeCol}-500/20 text-${typeCol}-400 flex items-center justify-center shrink-0 text-lg"><i class="ph-fill ph-device-mobile"></i></div>
+                            <div>
+                                <span class="text-[9px] font-bold text-${typeCol}-400 uppercase tracking-wider">Phone: ${p.typeCategory}</span>
+                                <h4 class="text-xs font-bold text-white">${p.app}</h4>
+                                <span class="text-[10px] text-slate-400 font-medium">${p.duration} mins</span>
+                            </div>
+                        </div>
+                        <button onclick="window.deleteEntry('phone', '${p.id}')" class="text-slate-500 hover:text-rose-400 p-2 rounded-lg transition"><i class="ph-bold ph-trash text-base"></i></button>
+                    `;
+                } else if(item.type === 'personal') {
+                    const pe = item.data;
+                    card.innerHTML = `
+                        <div class="absolute left-0 top-0 w-1.5 h-full bg-emerald-500"></div>
+                        <div class="flex items-center gap-3 pl-2">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 text-lg"><i class="ph-fill ph-user"></i></div>
+                            <div>
+                                <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Personal</span>
+                                <h4 class="text-xs font-bold text-white">${pe.activity}</h4>
+                                <span class="text-[10px] text-slate-400 font-medium">${pe.duration} mins</span>
+                            </div>
+                        </div>
+                        <button onclick="window.deleteEntry('personal', '${pe.id}')" class="text-slate-500 hover:text-rose-400 p-2 rounded-lg transition"><i class="ph-bold ph-trash text-base"></i></button>
+                    `;
+                }
+                container.appendChild(card);
+            });
         }
 
         window.saveDailyNotes = () => {
@@ -847,12 +872,11 @@
                         </div>
                         <div class="flex justify-between items-end pl-2 mt-2">
                             <div>
-                                <span class="block text-[10px] font-medium text-slate-400 mb-0.5">Accuracy</span>
-                                <span class="block text-lg font-black ${tData.acc!=='--' ? (tData.acc>=75?'text-emerald-400':tData.acc>=60?'text-orange-400':'text-rose-400') : 'text-slate-600'}">${tData.acc!=='--' ? tData.acc+'%' : '--'}</span>
+                                <span class="block text-[10px] font-medium text-slate-400 mb-0.5">Accuracy / Qs</span>
+                                <span class="block text-base font-black ${tData.acc!=='--' ? (tData.acc>=75?'text-emerald-400':tData.acc>=60?'text-orange-400':'text-rose-400') : 'text-slate-600'}">${tData.acc!=='--' ? tData.acc+'%' : '--'} <span class="text-xs font-semibold text-slate-400">(${tData.qTotal} Qs)</span></span>
                             </div>
                             <div class="text-right text-[10px] font-medium text-slate-400">
-                                <span class="block">${tData.qTotal} Qs</span>
-                                <span class="block">Concept: ${Math.round(tData.conceptTime/60)}h ${tData.conceptTime%60}m</span>
+                                <span class="block text-amber-300">Lectures/Learn: ${Math.round(tData.conceptTime/60)}h ${tData.conceptTime%60}m</span>
                             </div>
                         </div>
                     `;
@@ -894,7 +918,7 @@
 
         function getPeriodStats(endDateStr, days) {
             let sDate = new Date(endDateStr);
-            let pDW=0, pQA=0, pLR=0, pVA=0, pQCor=0, pMocks=0, pPhTot=0, pDist=0;
+            let pDW=0, pQA=0, pLR=0, pVA=0, pQCor=0, pMocks=0, pPhTot=0, pDist=0, pLearn=0;
             
             for(let i=0; i<days; i++) {
                 const d = new Date(sDate); d.setDate(d.getDate()-i);
@@ -902,9 +926,11 @@
                 const data = state.days[dt];
                 if(data) {
                     data.sessions.forEach(s => {
-                        pDW += Number(s.focusedMins) || 0;
+                        const mins = Number(s.focusedMins) || 0;
+                        pDW += mins;
+                        if(s.activityType === 'Concept Learning' || s.activityType === 'Revision') pLearn += mins;
                         if(s.activityType === 'Mock Test' || s.activityType === 'Sectional Test') pMocks++;
-                        if(s.activityType !== 'Concept Learning') {
+                        if(s.activityType !== 'Concept Learning' && s.activityType !== 'Revision') {
                             pQCor += Number(s.qCorrect) || 0;
                             if(s.section==='QA') pQA += Number(s.qTotal) || 0;
                             if(s.section==='LRDI') pLR += Number(s.qTotal) || 0;
@@ -918,7 +944,7 @@
                 }
             }
             const pTot = pQA+pLR+pVA;
-            return { dw: pDW, qs: pTot, acc: pTot>0 ? Math.round((pQCor/pTot)*100) : '--', mocks: pMocks, phone: pPhTot, dist: pDist };
+            return { dw: pDW, learn: pLearn, qs: pTot, acc: pTot>0 ? Math.round((pQCor/pTot)*100) : '--', mocks: pMocks, phone: pPhTot, dist: pDist };
         }
 
         function renderWeeklyReview() {
@@ -963,6 +989,12 @@
                     </div>
                 </div>
                 <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-slate-300">Concept Lectures / Learn</span>
+                    <div class="flex flex-col items-end">
+                        <span class="text-sm font-black text-white">${currentWeek.learn}m</span>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
                     <span class="text-xs font-bold text-slate-300">Phone Distractions</span>
                     <div class="flex flex-col items-end">
                         <span class="text-sm font-black text-white">${currentWeek.dist}m</span>
@@ -972,20 +1004,24 @@
 
             let facts = [];
             facts.push(`• Deep Work: ${Math.floor(currentWeek.dw/60)}h ${currentWeek.dw%60}m (${currentWeek.dw >= prevWeek.dw ? '+' : ''}${currentWeek.dw - prevWeek.dw}m vs previous week)`);
+            facts.push(`• Lectures & Concept Learning: ${Math.floor(currentWeek.learn/60)}h ${currentWeek.learn%60}m`);
             facts.push(`• Questions Solved: ${currentWeek.qs} (${currentWeek.qs >= prevWeek.qs ? '+' : ''}${currentWeek.qs - prevWeek.qs})`);
             facts.push(`• Overall Accuracy: ${currentWeek.acc}${currentWeek.acc!=='--'?'%':''}`);
             facts.push(`• Distraction Time: ${currentWeek.dist}m`);
-            facts.push(`• Phone Time: ${currentWeek.phone}m`);
             document.getElementById('weekly-facts-list').innerHTML = facts.map(f => `<li>${f}</li>`).join('');
         }
 
         function renderProductivityTab() {
             const day = getDayData();
-            let catDw = 0, personalTime = 0, phoneTime = 0, distractionTime = 0;
+            let catDw = 0, personalTime = 0, phoneTime = 0, distractionTime = 0, conceptLearnMins = 0;
             
-            day.sessions.forEach(s => catDw += Number(s.focusedMins) || 0);
+            day.sessions.forEach(s => {
+                const mins = Number(s.focusedMins) || 0;
+                catDw += mins;
+                if(s.activityType === 'Concept Learning' || s.activityType === 'Revision') conceptLearnMins += mins;
+            });
             day.personalLogs.forEach(pe => personalTime += Number(pe.duration) || 0);
-            day.phoneLogs.get ? '' : day.phoneLogs.forEach(p => {
+            day.phoneLogs.forEach(p => {
                 phoneTime += Number(p.duration) || 0;
                 if(p.typeCategory === 'Distraction') distractionTime += Number(p.duration) || 0;
             });
@@ -993,8 +1029,12 @@
             const timeAlloc = document.getElementById('prod-time-allocation');
             timeAlloc.innerHTML = `
                 <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
-                    <span class="text-xs font-bold text-slate-300">CAT Deep Work</span>
+                    <span class="text-xs font-bold text-slate-300">Total CAT Deep Work</span>
                     <span class="text-sm font-black text-blue-400">${Math.floor(catDw/60)}h ${catDw%60}m</span>
+                </div>
+                <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-slate-300">Lectures / Concept Learning</span>
+                    <span class="text-sm font-black text-amber-400">${Math.floor(conceptLearnMins/60)}h ${conceptLearnMins%60}m</span>
                 </div>
                 <div class="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
                     <span class="text-xs font-bold text-slate-300">Personal Work / Gym</span>
@@ -1033,7 +1073,7 @@
         function renderAll() {
             renderSidebar();
             renderDateStrip();
-            renderHourlyTimeline();
+            renderActivityLog();
             renderTopics();
             renderErrors();
             renderWeeklyReview();
@@ -1065,7 +1105,10 @@
         window.toggleHourInputs = () => {
             const act = document.getElementById('hr-activity').value;
             const qInps = document.getElementById('hr-q-inputs');
+            const lectureInp = document.getElementById('hr-lecture-input');
+            
             if(act === 'Concept Learning' || act === 'Revision' || act === 'Error Review') {
+                if(act === 'Concept Learning') lectureInp.classList.remove('hidden'); else lectureInp.classList.add('hidden');
                 qInps.style.opacity = '0.3';
                 document.getElementById('hr-total').value = 0;
                 document.getElementById('hr-correct').value = 0;
@@ -1074,6 +1117,7 @@
                 document.getElementById('hr-correct').disabled = true;
                 document.getElementById('hr-wrong').disabled = true;
             } else {
+                lectureInp.classList.add('hidden');
                 qInps.style.opacity = '1';
                 document.getElementById('hr-total').disabled = false;
                 document.getElementById('hr-correct').disabled = false;
@@ -1084,12 +1128,6 @@
         window.openModal = (type) => { document.getElementById(`modal-${type}`).classList.remove('hidden'); };
         window.closeModal = (type) => { document.getElementById(`modal-${type}`).classList.add('hidden'); };
 
-        window.openHourModal = (hour, label) => {
-            selectedHour = hour;
-            document.getElementById('hour-modal-title').innerHTML = `<i class="ph-fill ph-clock text-xl"></i> Log for ${label}`;
-            document.getElementById('modal-hour').classList.remove('hidden');
-        };
-
         window.switchHourTab = (tab) => {
             ['cat', 'phone', 'personal'].forEach(t => {
                 document.getElementById(`form-hour-${t}`).classList.add('hidden');
@@ -1099,7 +1137,7 @@
             document.getElementById(`htab-${tab}`).className = `flex-1 py-2 text-xs font-bold rounded-lg text-white transition ${tab==='cat'?'bg-blue-600':tab==='phone'?'bg-rose-600':'bg-emerald-600'}`;
         };
 
-        // Form Submit: Hour CAT
+        // Form Submit: CAT Session
         document.getElementById('form-hour-cat').addEventListener('submit', (e) => {
             e.preventDefault();
             const act = document.getElementById('hr-activity').value;
@@ -1112,48 +1150,48 @@
                 return;
             }
             
-            const timeStr = String(selectedHour).padStart(2, '0') + ':00';
+            const lectureName = document.getElementById('hr-lecture-name').value.trim();
+
             getDayData().sessions.push({
                 id: generateId(),
                 section: document.getElementById('hr-section').value,
                 topic: document.getElementById('hr-topic').value,
                 activityType: act,
+                lectureName: lectureName,
                 qTotal: qT, qCorrect: qC, qWrong: qW,
                 plannedMins: parseInt(document.getElementById('hr-plan').value),
                 focusedMins: parseInt(document.getElementById('hr-focus').value),
-                time: timeStr
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             });
             
             e.target.reset(); window.toggleHourInputs();
             saveLocalState(); renderAll(); forceSync(true); window.closeModal('hour');
-            showToast("CAT Session logged successfully!", "success");
+            showToast("CAT Session / Lecture logged successfully!", "success");
         });
 
-        // Form Submit: Hour Phone
+        // Form Submit: Phone
         document.getElementById('form-hour-phone').addEventListener('submit', (e) => {
             e.preventDefault();
-            const timeStr = String(selectedHour).padStart(2, '0') + ':00';
             getDayData().phoneLogs.push({
                 id: generateId(),
                 app: document.getElementById('hr-ph-app').value,
                 typeCategory: document.getElementById('hr-ph-type').value,
                 duration: parseInt(document.getElementById('hr-ph-mins').value),
-                time: timeStr
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             });
             e.target.reset();
             saveLocalState(); renderAll(); forceSync(true); window.closeModal('hour');
             showToast("Phone activity logged!", "success");
         });
 
-        // Form Submit: Hour Personal
+        // Form Submit: Personal
         document.getElementById('form-hour-personal').addEventListener('submit', (e) => {
             e.preventDefault();
-            const timeStr = String(selectedHour).padStart(2, '0') + ':00';
             getDayData().personalLogs.push({
                 id: generateId(),
                 activity: document.getElementById('hr-pe-activity').value,
                 duration: parseInt(document.getElementById('hr-pe-mins').value),
-                time: timeStr
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             });
             e.target.reset();
             saveLocalState(); renderAll(); forceSync(true); window.closeModal('hour');
@@ -1170,7 +1208,7 @@
                 type: document.getElementById('err-type').value,
                 reason: document.getElementById('err-reason').value,
                 concept: document.getElementById('err-concept').value,
-                time: '12:00'
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             });
             e.target.reset(); 
             saveLocalState(); renderAll(); forceSync(true); window.closeModal('error');
