@@ -213,6 +213,9 @@
                     <button id="tab-btn-topics" onclick="window.switchTab('topics')" class="tab-inactive flex-1 py-3 px-4 min-w-[130px] text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all btn-press border">
                         <i class="ph-fill ph-books"></i> Subject Mastery
                     </button>
+                    <button id="tab-btn-revision" onclick="window.switchTab('revision')" class="tab-inactive flex-1 py-3 px-4 min-w-[140px] text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all btn-press border">
+                        <i class="ph-fill ph-arrows-clockwise"></i> Revision Engine
+                    </button>
                     <button id="tab-btn-errors" onclick="window.switchTab('errors')" class="tab-inactive flex-1 py-3 px-4 min-w-[130px] text-xs sm:text-sm font-bold rounded-xl flex items-center justify-center gap-2 transition-all btn-press border">
                         <i class="ph-fill ph-warning-circle"></i> Error Log
                     </button>
@@ -268,6 +271,41 @@
                     </div>
                     <div class="flex-1 overflow-y-auto p-4 sm:p-5 custom-scroll bg-black/10">
                         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-10" id="topics-list"></div>
+                    </div>
+                </div>
+
+                <!-- TAB: REVISION ENGINE -->
+                <div id="tab-revision" class="hidden flex-col flex-1 overflow-hidden fade-in relative bg-black/10">
+                    <div class="p-4 px-6 border-b border-white/5 bg-slate-900/30 flex justify-between items-center shrink-0">
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-widest flex items-center gap-2">
+                                <i class="ph-bold ph-arrows-clockwise text-indigo-400 text-base"></i> Spaced Repetition Engine
+                            </h3>
+                            <span class="text-[11px] font-medium text-slate-400">Automated memory retention planner</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 sm:p-6 custom-scroll">
+                        <div class="flex flex-col gap-6 pb-10">
+                            
+                            <!-- Due Now -->
+                            <div class="bg-black/30 border border-white/5 p-5 rounded-3xl">
+                                <h3 class="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-4 border-b border-white/5 pb-2 flex items-center gap-1.5"><i class="ph-fill ph-warning-circle"></i> Action Required: Due Revisions</h3>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3" id="rev-due-list"></div>
+                            </div>
+
+                            <!-- Upcoming -->
+                            <div class="bg-black/20 border border-white/5 p-5 rounded-3xl">
+                                <h3 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-4 border-b border-white/5 pb-2 flex items-center gap-1.5"><i class="ph-fill ph-calendar-check"></i> Upcoming Revisions</h3>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3" id="rev-upcoming-list"></div>
+                            </div>
+
+                            <!-- Mastered / Well Revised -->
+                            <div class="bg-emerald-950/10 border border-emerald-500/10 p-5 rounded-3xl">
+                                <h3 class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-4 border-b border-emerald-500/10 pb-2 flex items-center gap-1.5"><i class="ph-fill ph-check-circle"></i> Safely Retained (Well Revised)</h3>
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3" id="rev-mastered-list"></div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
 
@@ -638,40 +676,61 @@
             return { action: `Attempt a Full Mock Test or Sectional`, subj: `Mixed`, top: `Full Syllabus`, tgt: `Evaluate speed & accuracy` };
         }
 
-        function getRevisionReminders() {
-            const curr = new Date(state.currentDate);
-            const reminders = [];
-            const checkedTopics = new Set();
-            const intervals = [1, 3, 7]; // Days ago to check
+        function getTopicRevisionStats() {
+            const topicHistory = {};
             
-            intervals.forEach(daysAgo => {
-                const d = new Date(curr);
-                d.setDate(d.getDate() - daysAgo);
-                const pastDay = state.days[formatYYYYMMDD(d)];
+            // Gather all activity dates for each topic
+            Object.entries(state.days).forEach(([dateStr, day]) => {
+                day.sessions.forEach(s => {
+                    const key = `${s.section}::${s.topic}`;
+                    if (!topicHistory[key]) {
+                        topicHistory[key] = { section: s.section, topic: s.topic, firstSeen: dateStr, lastSeen: dateStr, revCount: 0 };
+                    }
+                    if (s.activityType === 'Revision' || s.activityType === 'Error Review') {
+                        topicHistory[key].revCount++;
+                    }
+                    if (new Date(dateStr) > new Date(topicHistory[key].lastSeen)) {
+                        topicHistory[key].lastSeen = dateStr;
+                    }
+                });
+            });
+
+            // Calculate spaced repetition intervals
+            const intervals = [1, 3, 7, 14, 30, 60];
+            const today = new Date(state.currentDate);
+            today.setHours(0,0,0,0);
+
+            const due = [], upcoming = [], mastered = [];
+
+            Object.values(topicHistory).forEach(t => {
+                const lastDate = new Date(t.lastSeen);
+                lastDate.setHours(0,0,0,0);
                 
-                if (pastDay) {
-                    pastDay.sessions.forEach(s => {
-                        const topicKey = `${s.section}::${s.topic}`;
-                        if (checkedTopics.has(topicKey)) return;
-                        
-                        let revisedLater = false;
-                        for (let i = daysAgo - 1; i >= 0; i--) {
-                            const checkD = new Date(curr);
-                            checkD.setDate(checkD.getDate() - i);
-                            const checkDay = state.days[formatYYYYMMDD(checkD)];
-                            if (checkDay && checkDay.sessions.some(cs => cs.topic === s.topic && cs.activityType === 'Revision')) {
-                                revisedLater = true;
-                            }
-                        }
-                        
-                        if (!revisedLater) {
-                            reminders.push({ section: s.section, topic: s.topic, daysAgo: daysAgo });
-                            checkedTopics.add(topicKey);
-                        }
-                    });
+                // Determine interval based on successful revision count
+                const intervalDays = intervals[Math.min(t.revCount, intervals.length - 1)];
+                
+                const nextDue = new Date(lastDate);
+                nextDue.setDate(nextDue.getDate() + intervalDays);
+
+                const diffDays = Math.ceil((nextDue - today) / (1000 * 60 * 60 * 24));
+                t.nextDue = nextDue;
+                t.diffDays = diffDays;
+                t.intervalDays = intervalDays;
+
+                if (t.revCount >= 4 && diffDays > 14) {
+                    mastered.push(t); // Retained for a long time
+                } else if (diffDays <= 0) {
+                    due.push(t); // Due today or overdue
+                } else {
+                    upcoming.push(t); // Coming up soon
                 }
             });
-            return reminders;
+
+            due.sort((a,b) => a.diffDays - b.diffDays);
+            upcoming.sort((a,b) => a.diffDays - b.diffDays);
+            mastered.sort((a,b) => b.revCount - a.revCount);
+
+            return { due, upcoming, mastered };
         }
 
         function renderSidebar() {
@@ -742,7 +801,8 @@
                 </div>
             `;
 
-            const reminders = getRevisionReminders();
+            const revStats = getTopicRevisionStats();
+            const reminders = revStats.due.slice(0, 3); // Take top 3 due
             const remContainer = document.getElementById('revision-reminders-container');
             const remList = document.getElementById('revision-reminders-list');
             
@@ -750,12 +810,12 @@
                 remContainer.classList.remove('hidden');
                 remContainer.classList.add('flex');
                 remList.innerHTML = reminders.map(r => `
-                    <div class="bg-rose-950/30 border border-rose-500/20 p-2.5 rounded-xl flex justify-between items-center cursor-pointer hover:bg-rose-900/40 transition btn-press" onclick="window.openModal('hour'); document.getElementById('hr-section').value='${r.section}'; window.updateTopicDropdown('hr-topic', '${r.section}'); document.getElementById('hr-topic').value='${r.topic}'; document.getElementById('hr-activity').value='Revision'; window.toggleHourInputs();">
+                    <div class="bg-rose-950/30 border border-rose-500/20 p-2.5 rounded-xl flex justify-between items-center cursor-pointer hover:bg-rose-900/40 transition btn-press shadow-sm" onclick="window.openModal('hour'); document.getElementById('hr-section').value='${r.section}'; window.updateTopicDropdown('hr-topic', '${r.section}'); document.getElementById('hr-topic').value='${r.topic}'; document.getElementById('hr-activity').value='Revision'; window.toggleHourInputs();">
                         <div>
                             <span class="text-[9px] font-bold text-rose-400 uppercase tracking-widest block">${r.section}</span>
                             <span class="text-xs font-bold text-slate-200">${r.topic}</span>
                         </div>
-                        <span class="text-[10px] font-semibold text-rose-300 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">${r.daysAgo}d ago</span>
+                        <span class="text-[10px] font-semibold text-rose-300 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">${r.diffDays < 0 ? Math.abs(r.diffDays) + 'd overdue' : 'Due today'}</span>
                     </div>
                 `).join('');
             } else {
@@ -978,37 +1038,88 @@
             });
         }
 
+        function renderRevisionTracker() {
+            const stats = getTopicRevisionStats();
+            
+            const dueList = document.getElementById('rev-due-list');
+            const upcomingList = document.getElementById('rev-upcoming-list');
+            const masteredList = document.getElementById('rev-mastered-list');
+
+            const renderCard = (t, type) => {
+                let borderCol = type === 'due' ? 'border-rose-500/20 hover:border-rose-500/50' : type === 'upcoming' ? 'border-blue-500/20 hover:border-blue-500/50' : 'border-emerald-500/20';
+                let bgCol = type === 'due' ? 'bg-rose-950/20' : type === 'upcoming' ? 'bg-blue-950/20' : 'bg-emerald-950/20';
+                let accent = type === 'due' ? 'text-rose-400' : type === 'upcoming' ? 'text-blue-400' : 'text-emerald-400';
+                let timeText = type === 'due' ? (t.diffDays < 0 ? `${Math.abs(t.diffDays)} days overdue` : 'Due Today') : `Due in ${t.diffDays} days`;
+                if(type === 'mastered') timeText = `Safely retained (Rev: ${t.revCount})`;
+
+                return `
+                    <div class="${bgCol} border ${borderCol} p-3.5 rounded-2xl flex flex-col gap-3 group transition btn-press cursor-pointer" onclick="window.openModal('hour'); document.getElementById('hr-section').value='${t.section}'; window.updateTopicDropdown('hr-topic', '${t.section}'); document.getElementById('hr-topic').value='${t.topic}'; document.getElementById('hr-activity').value='Revision'; window.toggleHourInputs();">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-[9px] font-bold ${accent} uppercase tracking-widest block mb-0.5">${t.section}</span>
+                                <h4 class="text-sm font-bold text-white">${t.topic}</h4>
+                            </div>
+                            <span class="text-[9px] font-bold bg-black/40 px-2 py-1 rounded text-slate-300 border border-white/5 whitespace-nowrap">${timeText}</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] font-medium text-slate-400 bg-black/20 p-2 rounded-lg border border-white/5">
+                            <span class="flex-1"><i class="ph-fill ph-clock-counter-clockwise"></i> Last: ${new Date(t.lastSeen).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</span>
+                            <span class="flex-1 text-right"><i class="ph-bold ph-arrows-clockwise text-indigo-400"></i> ${t.revCount} Revisions</span>
+                        </div>
+                        ${type !== 'mastered' ? `<button class="w-full mt-1 bg-white/5 hover:bg-white/10 text-xs font-bold text-white py-2 rounded-xl transition border border-white/10">Log Revision Session</button>` : ''}
+                    </div>
+                `;
+            };
+
+            dueList.innerHTML = stats.due.length ? stats.due.map(t => renderCard(t, 'due')).join('') : `<p class="text-xs text-slate-500 italic p-2">You're all caught up! No revisions due today.</p>`;
+            upcomingList.innerHTML = stats.upcoming.length ? stats.upcoming.slice(0, 10).map(t => renderCard(t, 'upcoming')).join('') : `<p class="text-xs text-slate-500 italic p-2">No upcoming revisions scheduled yet.</p>`;
+            masteredList.innerHTML = stats.mastered.length ? stats.mastered.map(t => renderCard(t, 'mastered')).join('') : `<p class="text-xs text-slate-500 italic p-2">Consistency pays off. Mastered topics will appear here.</p>`;
+        }
+
         function renderErrors() {
             const list = document.getElementById('errors-list');
-            const errors = getDayData().errors;
-            list.innerHTML = errors.length === 0 ? `<div class="text-center py-10 opacity-50"><i class="ph-fill ph-check-circle text-4xl mb-2 text-emerald-500"></i><p class="text-sm font-medium">No errors logged for this date.</p></div>` : '';
+            if(!list) return;
+            list.innerHTML = '';
             
-            [...errors].reverse().forEach(e => {
-                const div = document.createElement('div');
-                div.className = `p-4 rounded-2xl border border-rose-500/20 bg-rose-950/10 flex flex-col gap-2 group relative`;
-                div.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div class="flex items-center gap-2">
-                            <span class="px-2 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[9px] font-bold uppercase tracking-wider">${e.type}</span>
-                            <span class="text-xs font-bold text-white">${e.section} • ${e.topic}</span>
+            let allErrors = [];
+            Object.entries(state.days).forEach(([dateStr, day]) => {
+                (day.errors || []).forEach(e => allErrors.push({date: dateStr, ...e}));
+            });
+            allErrors.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            if(allErrors.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-500 text-center py-10">No mistakes logged yet. Keep learning!</p>`;
+                return;
+            }
+
+            allErrors.forEach(err => {
+                const col = err.section === 'QA' ? 'blue' : err.section === 'LRDI' ? 'orange' : 'green';
+                list.innerHTML += `
+                    <div class="bg-black/30 border border-white/5 p-4 rounded-2xl flex flex-col gap-3 relative group transition hover:bg-black/40">
+                        <div class="absolute left-0 top-0 w-1.5 h-full bg-orange-500/50"></div>
+                        <div class="flex justify-between items-start pl-2">
+                            <div>
+                                <span class="text-[9px] font-bold text-${col}-400 uppercase tracking-widest">${err.section} • ${err.topic}</span>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-[9px] font-bold bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded border border-orange-500/20">${err.type}</span>
+                                    <span class="text-[9px] font-medium text-slate-400">${new Date(err.date).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="window.deleteEntry('error', '${err.id}')" class="text-slate-500 hover:text-rose-400 p-1.5 rounded-lg transition bg-black/40"><i class="ph-bold ph-trash"></i></button>
+                            </div>
                         </div>
-                        <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                            <button onclick="window.editEntry('error', '${e.id}')" class="p-1 text-slate-500 hover:text-blue-400 rounded-lg"><i class="ph-bold ph-pencil-simple"></i></button>
-                            <button onclick="window.deleteEntry('error', '${e.id}')" class="p-1 text-slate-500 hover:text-red-400 rounded-lg"><i class="ph-bold ph-trash"></i></button>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
-                        <div class="bg-black/30 p-3 rounded-xl border border-white/5">
-                            <span class="text-[9px] font-bold text-rose-400 uppercase tracking-widest block mb-1">Mistake / Gap</span>
-                            <p class="text-xs text-slate-300 leading-relaxed">${e.reason}</p>
-                        </div>
-                        <div class="bg-emerald-950/20 p-3 rounded-xl border border-emerald-500/10">
-                            <span class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest block mb-1">Correct Concept</span>
-                            <p class="text-xs text-slate-300 leading-relaxed">${e.concept}</p>
+                        <div class="pl-2 mt-1 flex flex-col gap-2">
+                            <div class="bg-rose-950/20 p-2.5 rounded-xl border border-rose-500/10">
+                                <span class="block text-[9px] font-bold text-rose-400 uppercase mb-0.5">Mistake</span>
+                                <p class="text-xs text-slate-300">${err.reason}</p>
+                            </div>
+                            <div class="bg-emerald-950/20 p-2.5 rounded-xl border border-emerald-500/10">
+                                <span class="block text-[9px] font-bold text-emerald-400 uppercase mb-0.5">Takeaway</span>
+                                <p class="text-xs text-emerald-200">${err.concept}</p>
+                            </div>
                         </div>
                     </div>
                 `;
-                list.appendChild(div);
             });
         }
 
@@ -1171,22 +1282,29 @@
             renderDateStrip();
             renderActivityLog();
             renderTopics();
+            renderRevisionTracker();
             renderErrors();
             renderWeeklyReview();
             renderProductivityTab();
         }
 
         window.switchTab = (tabId) => {
-            ['diary', 'topics', 'errors', 'weekly', 'productivity'].forEach(id => {
-                document.getElementById(`tab-${id}`).classList.add('hidden');
-                document.getElementById(`tab-${id}`).classList.remove('flex');
-                document.getElementById(`tab-btn-${id}`).classList.replace('tab-active', 'tab-inactive');
+            ['diary', 'topics', 'revision', 'errors', 'weekly', 'productivity'].forEach(id => {
+                const el = document.getElementById(`tab-${id}`);
+                const btn = document.getElementById(`tab-btn-${id}`);
+                if (el && btn) {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                    btn.classList.replace('tab-active', 'tab-inactive');
+                }
             });
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             document.getElementById(`tab-${tabId}`).classList.add('flex');
             document.getElementById(`tab-btn-${tabId}`).classList.replace('tab-inactive', 'tab-active');
+            
             if(tabId === 'weekly') renderWeeklyReview();
             if(tabId === 'productivity') renderProductivityTab();
+            if(tabId === 'revision') renderRevisionTracker();
         };
 
         window.updateTopicDropdown = (dropdownId, section) => {
@@ -1394,11 +1512,12 @@
         });
 
         window.deleteEntry = (type, id) => {
-            const d = getDayData();
-            if(type === 'cat') d.sessions = d.sessions.filter(x => x.id !== id);
-            else if(type === 'phone') d.phoneLogs = d.phoneLogs.filter(x => x.id !== id);
-            else if(type === 'personal') d.personalLogs = d.personalLogs.filter(x => x.id !== id);
-            else if(type === 'error') d.errors = d.errors.filter(x => x.id !== id);
+            Object.values(state.days).forEach(d => {
+                if(type === 'cat' && d.sessions) d.sessions = d.sessions.filter(x => x.id !== id);
+                else if(type === 'phone' && d.phoneLogs) d.phoneLogs = d.phoneLogs.filter(x => x.id !== id);
+                else if(type === 'personal' && d.personalLogs) d.personalLogs = d.personalLogs.filter(x => x.id !== id);
+                else if(type === 'error' && d.errors) d.errors = d.errors.filter(x => x.id !== id);
+            });
             saveLocalState(); renderAll(); forceSync(true);
             showToast("Entry removed", "success");
         };
