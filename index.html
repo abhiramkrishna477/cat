@@ -131,6 +131,22 @@
                 </div>
 
                 <div class="flex flex-col gap-3 shrink-0">
+                    <div class="bg-gradient-to-r from-purple-900/30 to-blue-900/30 p-4 rounded-2xl border border-purple-500/20 shrink-0 flex justify-between items-center shadow-lg mb-1">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-purple-500/20 rounded-xl flex items-center justify-center text-purple-400 text-xl"><i class="ph-fill ph-clock"></i></div>
+                            <div>
+                                <span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Today's Total Study</span>
+                                <h3 id="sidebar-total-hours" class="text-xl font-black text-white">0h 00m</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spaced Repetition Reminders -->
+                    <div id="revision-reminders-container" class="hidden flex-col gap-2 shrink-0 mb-2">
+                        <h3 class="text-[10px] uppercase font-bold text-rose-400 tracking-wider flex items-center gap-1.5"><i class="ph-bold ph-bell-ringing"></i> Spaced Repetition Due</h3>
+                        <div id="revision-reminders-list" class="flex flex-col gap-2"></div>
+                    </div>
+
                     <div class="flex justify-between items-end">
                         <h2 class="text-sm font-bold text-white flex items-center gap-2">
                             <i class="ph-fill ph-chart-polar text-orange-500"></i> Today's Output Score
@@ -349,6 +365,16 @@
                         <input type="text" id="hr-lecture-name" placeholder="e.g. MBA Pathshala Percentages Part 1" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
                     </div>
 
+                    <div id="hr-q-source-container" class="hidden flex flex-col gap-1">
+                        <label class="text-[9px] font-bold text-blue-400 uppercase px-1">Question Source</label>
+                        <select id="hr-q-source" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                            <option value="PYQ">Past Year Questions (PYQ)</option>
+                            <option value="Module/Book">Module / Book / Handout</option>
+                            <option value="Sectional/Mock">Sectional / Mock Qs</option>
+                            <option value="Mixed/Other">Mixed / Other</option>
+                        </select>
+                    </div>
+
                     <div id="hr-q-inputs" class="grid grid-cols-3 gap-2">
                         <div>
                             <label class="text-[9px] font-bold text-slate-500 uppercase px-1">Attempted</label>
@@ -366,12 +392,8 @@
 
                     <div class="flex gap-3">
                         <div class="flex-1">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase px-1">Planned Mins</label>
-                            <input type="number" id="hr-plan" value="60" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 text-center mt-1" required>
-                        </div>
-                        <div class="flex-1">
-                            <label class="text-[10px] font-bold text-purple-400 uppercase px-1">Actual Focus Mins</label>
-                            <input type="number" id="hr-focus" value="50" class="w-full bg-purple-900/20 border border-purple-500/30 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 text-center mt-1" required>
+                            <label class="text-[10px] font-bold text-purple-400 uppercase px-1">Study Duration (Mins)</label>
+                            <input type="number" id="hr-duration" value="60" class="w-full bg-purple-900/20 border border-purple-500/30 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 text-center mt-1" required>
                         </div>
                     </div>
 
@@ -450,6 +472,8 @@
         const formatYYYYMMDD = (date) => date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
         const todayStr = formatYYYYMMDD(new Date('2026-09-27T00:00:00'));
         const TARGET_DATE = new Date('2026-11-25T00:00:00');
+        
+        let currentEdit = { type: null, id: null };
 
         let state = {
             currentDate: todayStr,
@@ -544,7 +568,7 @@
             Object.values(state.days).forEach(day => {
                 day.sessions.forEach(s => {
                     if(!stats[s.topic]) stats[s.topic] = { sec: s.section, qTotal: 0, qCorrect: 0, qWrong: 0, conceptTime: 0, practiceTime: 0, totalTime: 0, status: 'NOT STARTED' };
-                    const mins = Number(s.focusedMins) || 0;
+                    const mins = Number(s.duration) || Number(s.focusedMins) || 0;
                     stats[s.topic].totalTime += mins;
                     if(s.activityType === 'Concept Learning' || s.activityType === 'Revision') {
                         stats[s.topic].conceptTime += mins;
@@ -614,6 +638,42 @@
             return { action: `Attempt a Full Mock Test or Sectional`, subj: `Mixed`, top: `Full Syllabus`, tgt: `Evaluate speed & accuracy` };
         }
 
+        function getRevisionReminders() {
+            const curr = new Date(state.currentDate);
+            const reminders = [];
+            const checkedTopics = new Set();
+            const intervals = [1, 3, 7]; // Days ago to check
+            
+            intervals.forEach(daysAgo => {
+                const d = new Date(curr);
+                d.setDate(d.getDate() - daysAgo);
+                const pastDay = state.days[formatYYYYMMDD(d)];
+                
+                if (pastDay) {
+                    pastDay.sessions.forEach(s => {
+                        const topicKey = `${s.section}::${s.topic}`;
+                        if (checkedTopics.has(topicKey)) return;
+                        
+                        let revisedLater = false;
+                        for (let i = daysAgo - 1; i >= 0; i--) {
+                            const checkD = new Date(curr);
+                            checkD.setDate(checkD.getDate() - i);
+                            const checkDay = state.days[formatYYYYMMDD(checkD)];
+                            if (checkDay && checkDay.sessions.some(cs => cs.topic === s.topic && cs.activityType === 'Revision')) {
+                                revisedLater = true;
+                            }
+                        }
+                        
+                        if (!revisedLater) {
+                            reminders.push({ section: s.section, topic: s.topic, daysAgo: daysAgo });
+                            checkedTopics.add(topicKey);
+                        }
+                    });
+                }
+            });
+            return reminders;
+        }
+
         function renderSidebar() {
             const curr = new Date(state.currentDate);
             const diffDays = Math.max(0, Math.ceil((TARGET_DATE - curr) / (1000 * 60 * 60 * 24)));
@@ -636,7 +696,7 @@
             const day = getDayData();
             let qa = 0, varc = 0, lrdi = 0, dw = 0, learnMins = 0;
             day.sessions.forEach(s => {
-                const mins = Number(s.focusedMins) || 0;
+                const mins = Number(s.duration) || Number(s.focusedMins) || 0;
                 dw += mins;
                 if(s.activityType === 'Concept Learning' || s.activityType === 'Revision') {
                     learnMins += mins;
@@ -670,6 +730,8 @@
             document.getElementById('tgt-qa-bar').style.width = `${pQA}%`;
             document.getElementById('tgt-lrdi-text').textContent = `${lrdi} / ${tLR}`;
             document.getElementById('tgt-lrdi-bar').style.width = `${pLRDI}%`;
+            
+            document.getElementById('sidebar-total-hours').textContent = `${Math.floor(dw/60)}h ${(dw%60).toString().padStart(2, '0')}m`;
 
             const nx = getNextAction(glob.topicData);
             document.getElementById('next-action-content').innerHTML = `
@@ -679,6 +741,27 @@
                     <i class="ph-bold ph-crosshair"></i> ${nx.tgt}
                 </div>
             `;
+
+            const reminders = getRevisionReminders();
+            const remContainer = document.getElementById('revision-reminders-container');
+            const remList = document.getElementById('revision-reminders-list');
+            
+            if (reminders.length > 0) {
+                remContainer.classList.remove('hidden');
+                remContainer.classList.add('flex');
+                remList.innerHTML = reminders.map(r => `
+                    <div class="bg-rose-950/30 border border-rose-500/20 p-2.5 rounded-xl flex justify-between items-center cursor-pointer hover:bg-rose-900/40 transition btn-press" onclick="window.openModal('hour'); document.getElementById('hr-section').value='${r.section}'; window.updateTopicDropdown('hr-topic', '${r.section}'); document.getElementById('hr-topic').value='${r.topic}'; document.getElementById('hr-activity').value='Revision'; window.toggleHourInputs();">
+                        <div>
+                            <span class="text-[9px] font-bold text-rose-400 uppercase tracking-widest block">${r.section}</span>
+                            <span class="text-xs font-bold text-slate-200">${r.topic}</span>
+                        </div>
+                        <span class="text-[10px] font-semibold text-rose-300 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/20">${r.daysAgo}d ago</span>
+                    </div>
+                `).join('');
+            } else {
+                remContainer.classList.add('hidden');
+                remContainer.classList.remove('flex');
+            }
 
             const cbars = document.getElementById('consistency-bars'); const clabs = document.getElementById('consistency-labels');
             cbars.innerHTML=''; clabs.innerHTML='';
@@ -690,7 +773,7 @@
                 const dData = state.days[sDate] || { sessions:[] };
                 let ddw=0, dqa=0, dlr=0, dlearn=0;
                 dData.sessions.forEach(ss=>{ 
-                    const m = Number(ss.focusedMins)||0;
+                    const m = Number(ss.duration) || Number(ss.focusedMins) || 0;
                     ddw += m;
                     if(ss.activityType==='Concept Learning'||ss.activityType==='Revision') dlearn += m;
                     else { if(ss.section==='QA')dqa+=Number(ss.qTotal)||0; if(ss.section==='LRDI')dlr+=Math.ceil((Number(ss.qTotal)||0)/4); }
@@ -780,15 +863,19 @@
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs font-bold text-white">${s.topic}</span>
                                     <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-${col}-500/10 text-${col}-300 border border-${col}-500/20">${s.activityType}</span>
+                                    ${s.qSource ? `<span class="text-[9px] font-bold px-2 py-0.5 rounded bg-slate-500/10 text-slate-400 border border-slate-500/20">${s.qSource}</span>` : ''}
                                 </div>
                                 ${s.lectureName ? `<p class="text-xs text-amber-300 font-medium mt-0.5 flex items-center gap-1"><i class="ph-fill ph-play-circle"></i> ${s.lectureName}</p>` : ''}
                                 <div class="flex items-center gap-3 text-[10px] font-semibold text-slate-400 mt-1">
-                                    <span><i class="ph-fill ph-clock text-purple-400"></i> ${s.focusedMins}m focus</span>
+                                    <span><i class="ph-fill ph-clock text-purple-400"></i> ${Number(s.duration) || Number(s.focusedMins) || 0}m focus</span>
                                     ${!isLecture ? `<span><i class="ph-fill ph-check-circle text-emerald-400"></i> ${s.qCorrect}/${s.qTotal} Qs (${acc}%)</span>` : ''}
                                 </div>
                             </div>
                         </div>
-                        <button onclick="window.deleteEntry('cat', '${s.id}')" class="text-slate-500 hover:text-rose-400 p-2 rounded-lg transition"><i class="ph-bold ph-trash text-base"></i></button>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button onclick="window.editEntry('cat', '${s.id}')" class="text-slate-500 hover:text-blue-400 p-2 rounded-lg transition"><i class="ph-bold ph-pencil-simple text-base"></i></button>
+                            <button onclick="window.deleteEntry('cat', '${s.id}')" class="text-slate-500 hover:text-rose-400 p-2 rounded-lg transition"><i class="ph-bold ph-trash text-base"></i></button>
+                        </div>
                     `;
                 } else if(item.type === 'phone') {
                     const p = item.data;
@@ -803,7 +890,10 @@
                                 <span class="text-[10px] text-slate-400 font-medium">${p.duration} mins</span>
                             </div>
                         </div>
-                        <button onclick="window.deleteEntry('phone', '${p.id}')" class="text-slate-500 hover:text-rose-400 p-2 rounded-lg transition"><i class="ph-bold ph-trash text-base"></i></button>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button onclick="window.editEntry('phone', '${p.id}')" class="text-slate-500 hover:text-blue-400 p-2 rounded-lg transition"><i class="ph-bold ph-pencil-simple text-base"></i></button>
+                            <button onclick="window.deleteEntry('phone', '${p.id}')" class="text-slate-500 hover:text-rose-400 p-2 rounded-lg transition"><i class="ph-bold ph-trash text-base"></i></button>
+                        </div>
                     `;
                 } else if(item.type === 'personal') {
                     const pe = item.data;
@@ -817,7 +907,10 @@
                                 <span class="text-[10px] text-slate-400 font-medium">${pe.duration} mins</span>
                             </div>
                         </div>
-                        <button onclick="window.deleteEntry('personal', '${pe.id}')" class="text-slate-500 hover:text-rose-400 p-2 rounded-lg transition"><i class="ph-bold ph-trash text-base"></i></button>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button onclick="window.editEntry('personal', '${pe.id}')" class="text-slate-500 hover:text-blue-400 p-2 rounded-lg transition"><i class="ph-bold ph-pencil-simple text-base"></i></button>
+                            <button onclick="window.deleteEntry('personal', '${pe.id}')" class="text-slate-500 hover:text-rose-400 p-2 rounded-lg transition"><i class="ph-bold ph-trash text-base"></i></button>
+                        </div>
                     `;
                 }
                 container.appendChild(card);
@@ -899,7 +992,10 @@
                             <span class="px-2 py-0.5 bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded text-[9px] font-bold uppercase tracking-wider">${e.type}</span>
                             <span class="text-xs font-bold text-white">${e.section} • ${e.topic}</span>
                         </div>
-                        <button onclick="window.deleteEntry('error', '${e.id}')" class="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 rounded-lg transition-all absolute top-2 right-2"><i class="ph-bold ph-trash"></i></button>
+                        <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onclick="window.editEntry('error', '${e.id}')" class="p-1 text-slate-500 hover:text-blue-400 rounded-lg"><i class="ph-bold ph-pencil-simple"></i></button>
+                            <button onclick="window.deleteEntry('error', '${e.id}')" class="p-1 text-slate-500 hover:text-red-400 rounded-lg"><i class="ph-bold ph-trash"></i></button>
+                        </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-1">
                         <div class="bg-black/30 p-3 rounded-xl border border-white/5">
@@ -926,7 +1022,7 @@
                 const data = state.days[dt];
                 if(data) {
                     data.sessions.forEach(s => {
-                        const mins = Number(s.focusedMins) || 0;
+                        const mins = Number(s.duration) || Number(s.focusedMins) || 0;
                         pDW += mins;
                         if(s.activityType === 'Concept Learning' || s.activityType === 'Revision') pLearn += mins;
                         if(s.activityType === 'Mock Test' || s.activityType === 'Sectional Test') pMocks++;
@@ -1016,7 +1112,7 @@
             let catDw = 0, personalTime = 0, phoneTime = 0, distractionTime = 0, conceptLearnMins = 0;
             
             day.sessions.forEach(s => {
-                const mins = Number(s.focusedMins) || 0;
+                const mins = Number(s.duration) || Number(s.focusedMins) || 0;
                 catDw += mins;
                 if(s.activityType === 'Concept Learning' || s.activityType === 'Revision') conceptLearnMins += mins;
             });
@@ -1106,9 +1202,11 @@
             const act = document.getElementById('hr-activity').value;
             const qInps = document.getElementById('hr-q-inputs');
             const lectureInp = document.getElementById('hr-lecture-input');
+            const qSourceInp = document.getElementById('hr-q-source-container');
             
             if(act === 'Concept Learning' || act === 'Revision' || act === 'Error Review') {
                 if(act === 'Concept Learning') lectureInp.classList.remove('hidden'); else lectureInp.classList.add('hidden');
+                qSourceInp.classList.add('hidden');
                 qInps.style.opacity = '0.3';
                 document.getElementById('hr-total').value = 0;
                 document.getElementById('hr-correct').value = 0;
@@ -1118,6 +1216,7 @@
                 document.getElementById('hr-wrong').disabled = true;
             } else {
                 lectureInp.classList.add('hidden');
+                qSourceInp.classList.remove('hidden');
                 qInps.style.opacity = '1';
                 document.getElementById('hr-total').disabled = false;
                 document.getElementById('hr-correct').disabled = false;
@@ -1126,7 +1225,59 @@
         };
 
         window.openModal = (type) => { document.getElementById(`modal-${type}`).classList.remove('hidden'); };
-        window.closeModal = (type) => { document.getElementById(`modal-${type}`).classList.add('hidden'); };
+        window.closeModal = (type) => { 
+            document.getElementById(`modal-${type}`).classList.add('hidden'); 
+            currentEdit = { type: null, id: null };
+            if(type === 'hour') { document.getElementById('form-hour-cat').reset(); document.getElementById('form-hour-phone').reset(); document.getElementById('form-hour-personal').reset(); window.toggleHourInputs(); }
+            if(type === 'error') document.getElementById('form-error').reset();
+        };
+
+        window.editEntry = (type, id) => {
+            currentEdit = { type, id };
+            const d = getDayData();
+            if(type === 'cat') {
+                const s = d.sessions.find(x => x.id === id);
+                if(!s) return;
+                document.getElementById('hr-section').value = s.section;
+                window.updateTopicDropdown('hr-topic', s.section);
+                document.getElementById('hr-topic').value = s.topic;
+                document.getElementById('hr-activity').value = s.activityType;
+                document.getElementById('hr-lecture-name').value = s.lectureName || '';
+                document.getElementById('hr-q-source').value = s.qSource || 'PYQ';
+                document.getElementById('hr-total').value = s.qTotal || 0;
+                document.getElementById('hr-correct').value = s.qCorrect || 0;
+                document.getElementById('hr-wrong').value = s.qWrong || 0;
+                document.getElementById('hr-duration').value = s.duration || s.focusedMins || 0;
+                window.toggleHourInputs();
+                window.switchHourTab('cat');
+                window.openModal('hour');
+            } else if(type === 'phone') {
+                const p = d.phoneLogs.find(x => x.id === id);
+                if(!p) return;
+                document.getElementById('hr-ph-app').value = p.app;
+                document.getElementById('hr-ph-type').value = p.typeCategory;
+                document.getElementById('hr-ph-mins').value = p.duration;
+                window.switchHourTab('phone');
+                window.openModal('hour');
+            } else if(type === 'personal') {
+                const pe = d.personalLogs.find(x => x.id === id);
+                if(!pe) return;
+                document.getElementById('hr-pe-activity').value = pe.activity;
+                document.getElementById('hr-pe-mins').value = pe.duration;
+                window.switchHourTab('personal');
+                window.openModal('hour');
+            } else if(type === 'error') {
+                const e = d.errors.find(x => x.id === id);
+                if(!e) return;
+                document.getElementById('err-section').value = e.section;
+                window.updateTopicDropdown('err-topic', e.section);
+                document.getElementById('err-topic').value = e.topic;
+                document.getElementById('err-type').value = e.type;
+                document.getElementById('err-reason').value = e.reason;
+                document.getElementById('err-concept').value = e.concept;
+                window.openModal('error');
+            }
+        };
 
         window.switchHourTab = (tab) => {
             ['cat', 'phone', 'personal'].forEach(t => {
@@ -1151,68 +1302,95 @@
             }
             
             const lectureName = document.getElementById('hr-lecture-name').value.trim();
+            const qSource = document.getElementById('hr-q-source').value;
+            const duration = parseInt(document.getElementById('hr-duration').value);
 
-            getDayData().sessions.push({
-                id: generateId(),
+            const sessionData = {
+                id: currentEdit.id || generateId(),
                 section: document.getElementById('hr-section').value,
                 topic: document.getElementById('hr-topic').value,
                 activityType: act,
                 lectureName: lectureName,
+                qSource: qSource,
                 qTotal: qT, qCorrect: qC, qWrong: qW,
-                plannedMins: parseInt(document.getElementById('hr-plan').value),
-                focusedMins: parseInt(document.getElementById('hr-focus').value),
+                duration: duration,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
+            };
+
+            if (currentEdit.type === 'cat' && currentEdit.id) {
+                const idx = getDayData().sessions.findIndex(s => s.id === currentEdit.id);
+                if(idx !== -1) getDayData().sessions[idx] = sessionData;
+            } else {
+                getDayData().sessions.push(sessionData);
+            }
             
-            e.target.reset(); window.toggleHourInputs();
+            e.target.reset(); window.toggleHourInputs(); currentEdit = { type: null, id: null };
             saveLocalState(); renderAll(); forceSync(true); window.closeModal('hour');
-            showToast("CAT Session / Lecture logged successfully!", "success");
+            showToast("CAT Session saved successfully!", "success");
         });
 
         // Form Submit: Phone
         document.getElementById('form-hour-phone').addEventListener('submit', (e) => {
             e.preventDefault();
-            getDayData().phoneLogs.push({
-                id: generateId(),
+            const data = {
+                id: currentEdit.id || generateId(),
                 app: document.getElementById('hr-ph-app').value,
                 typeCategory: document.getElementById('hr-ph-type').value,
                 duration: parseInt(document.getElementById('hr-ph-mins').value),
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
-            e.target.reset();
+            };
+            if (currentEdit.type === 'phone' && currentEdit.id) {
+                const idx = getDayData().phoneLogs.findIndex(s => s.id === currentEdit.id);
+                if(idx !== -1) getDayData().phoneLogs[idx] = data;
+            } else {
+                getDayData().phoneLogs.push(data);
+            }
+            e.target.reset(); currentEdit = { type: null, id: null };
             saveLocalState(); renderAll(); forceSync(true); window.closeModal('hour');
-            showToast("Phone activity logged!", "success");
+            showToast("Phone activity saved!", "success");
         });
 
         // Form Submit: Personal
         document.getElementById('form-hour-personal').addEventListener('submit', (e) => {
             e.preventDefault();
-            getDayData().personalLogs.push({
-                id: generateId(),
+            const data = {
+                id: currentEdit.id || generateId(),
                 activity: document.getElementById('hr-pe-activity').value,
                 duration: parseInt(document.getElementById('hr-pe-mins').value),
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
-            e.target.reset();
+            };
+            if (currentEdit.type === 'personal' && currentEdit.id) {
+                const idx = getDayData().personalLogs.findIndex(s => s.id === currentEdit.id);
+                if(idx !== -1) getDayData().personalLogs[idx] = data;
+            } else {
+                getDayData().personalLogs.push(data);
+            }
+            e.target.reset(); currentEdit = { type: null, id: null };
             saveLocalState(); renderAll(); forceSync(true); window.closeModal('hour');
-            showToast("Personal activity logged!", "success");
+            showToast("Personal activity saved!", "success");
         });
 
         // Form Submit: Error
         document.getElementById('form-error').addEventListener('submit', (e) => {
             e.preventDefault();
-            getDayData().errors.push({
-                id: generateId(),
+            const data = {
+                id: currentEdit.id || generateId(),
                 section: document.getElementById('err-section').value,
                 topic: document.getElementById('err-topic').value,
                 type: document.getElementById('err-type').value,
                 reason: document.getElementById('err-reason').value,
                 concept: document.getElementById('err-concept').value,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
-            e.target.reset(); 
+            };
+            if (currentEdit.type === 'error' && currentEdit.id) {
+                const idx = getDayData().errors.findIndex(s => s.id === currentEdit.id);
+                if(idx !== -1) getDayData().errors[idx] = data;
+            } else {
+                getDayData().errors.push(data);
+            }
+            e.target.reset(); currentEdit = { type: null, id: null }; 
             saveLocalState(); renderAll(); forceSync(true); window.closeModal('error');
-            showToast("Mistake recorded in Error Log", "success");
+            showToast("Mistake saved in Error Log", "success");
         });
 
         window.deleteEntry = (type, id) => {
